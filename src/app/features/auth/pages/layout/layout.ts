@@ -8,8 +8,5 @@ import { RouterOutlet } from '@angular/router';
   styles: ``,
 })
 export class Layout {
-
-  public curren_year() {
-    return new Date().getFullYear();
-  }
+  currentYear = new Date().getFullYear();
 }

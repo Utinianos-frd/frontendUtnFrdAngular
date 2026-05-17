@@ -12,6 +12,8 @@ import { ButtonModule } from 'primeng/button';
 export class NotFound {
   private location = inject(Location);
 
+  currentYear = new Date().getFullYear();
+
   goBack() {
     this.location.back();
   }
