@@ -8,18 +8,23 @@
   </div>
 
   <!-- Formulario -->
-  <form class="flex flex-col gap-5">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="submit()">
 
-    <!-- Email -->
+    <!-- Usuario -->
     <div class="flex flex-col gap-1">
-      <label for="email" class="text-sm font-medium text-gray-700">Correo electrónico</label>
+      <label for="username" class="text-sm font-medium text-gray-700">Usuario</label>
       <input
         pInputText
-        id="email"
-        type="email"
-        placeholder="usuario@utn.edu.ar"
+        id="username"
+        type="text"
+        autocomplete="username"
+        placeholder="usuario"
         class="w-full"
+        formControlName="username"
       />
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <small class="text-red-500">Ingresá tu usuario</small>
+      }
     </div>
 
     <div class="flex flex-col gap-1">
@@ -31,12 +36,21 @@
         [toggleMask]="true"
         styleClass="w-full"
         inputStyleClass="w-full"
+        formControlName="password"
       />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small class="text-red-500">Ingresá tu contraseña</small>
+      }
     </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-red-600 text-center">{{ errorMessage() }}</p>
+    }
 
     <p-button
       label="Ingresar"
       type="submit"
+      [loading]="loading()"
       styleClass="w-full"
       size="large"
     />

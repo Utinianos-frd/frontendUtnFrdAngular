@@ -1,59 +1,94 @@
-# FrontendAngularUtn
+# Tasker — Frontend (Angular)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.9.
+Frontend de **Tasker**, hecho con Angular 21, PrimeNG y Tailwind CSS.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- **Node.js** 20.19 o superior (recomendado: 22 LTS o 24). Verificá con `node -v`.
+- **npm** (viene con Node).
+- **Git**.
+- El **backend** corriendo en `http://localhost:8000` (ver [Backend](#backend)).
 
-```bash
-ng serve
-```
+No hace falta instalar Angular CLI de forma global: se usa con `npx ng` o con los scripts de npm.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Levantar el proyecto
 
 ```bash
-ng generate component component-name
+# 1. Clonar el repo
+git clone https://github.com/Utinianos-frd/frontendUtnFrdAngular.git
+cd frontendUtnFrdAngular
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Levantar el servidor de desarrollo
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Abrí **http://localhost:4200**. Te va a redirigir a `/auth/login`.
 
-```bash
-ng generate --help
+La app se recarga sola cuando guardás cambios.
+
+## Backend
+
+El frontend consume la API en `http://localhost:8000/api/v1` (configurado en `src/app/core/services/auth.service.ts`, constante `API_URL`).
+
+Antes de loguearte, asegurate de que el backend:
+
+1. **Esté corriendo** en el puerto 8000. La documentación queda en http://localhost:8000/api/v1/docs/
+2. **Tenga las migraciones aplicadas**:
+   ```bash
+   python manage.py migrate
+   ```
+3. **Tenga CORS habilitado** para `http://localhost:4200`.
+4. **Tenga al menos un usuario.** Opciones:
+   - `POST /api/v1/dev/seed`: crea una organización de prueba con un usuario por rol y devuelve las credenciales (solo con `DEBUG=True`).
+   - `POST /api/v1/auth/register`: registra un usuario nuevo.
+
+> El login pide **nombre de usuario** (no email) y contraseña.
+
+### Probar el frontend sin backend
+
+Para ver las pantallas protegidas sin loguearte, abrí la consola del navegador (F12) y ejecutá:
+
+```js
+localStorage.setItem('token', 'x')
 ```
 
-## Building
+Recargá y vas a poder entrar a `/home`. Las llamadas a la API van a fallar, pero se ve el diseño.
+Para "cerrar sesión", hacé clic en el avatar o borrá el token con `localStorage.clear()`.
 
-To build the project run:
+## Scripts útiles
 
-```bash
-ng build
+| Comando         | Qué hace                                      |
+| --------------- | --------------------------------------------- |
+| `npm start`     | Servidor de desarrollo en `localhost:4200`    |
+| `npm run build` | Compila para producción en `dist/`            |
+| `npm test`      | Corre los tests unitarios (Vitest)            |
+
+## Estructura
+
+```
+src/app/
+├── core/
+│   ├── guards/         # authGuard: protege rutas si no hay token
+│   ├── interceptors/   # agrega "Authorization: Bearer <token>" a cada request
+│   └── services/       # AuthService: login, logout, me
+├── features/
+│   ├── auth/           # layout + pantalla de login
+│   ├── home/           # dashboard (pantalla "Inicio")
+│   └── not-found/      # página 404
+└── shared/primeng/     # módulos de PrimeNG compartidos
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- Rutas principales en `src/app/app.routes.ts`.
+- Configuración global (HttpClient, tema de PrimeNG) en `src/app/app.config.ts`.
+- Estilos globales (Tailwind + PrimeIcons) en `src/styles.css`.
 
-## Running unit tests
+## Problemas comunes
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **"No se pudo conectar con el servidor"** al loguearte: el backend no está corriendo en el puerto 8000.
+- **Error de CORS en la consola**: falta habilitar `http://localhost:4200` en el backend.
+- **"Credenciales inválidas"**: el usuario no existe (ver [Backend](#backend), punto 4).
+- **El puerto 4200 está ocupado**: `npm start -- --port 4300`.
+- **Errores raros después de un `git pull`**: volvé a correr `npm install`.
