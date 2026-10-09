@@ -1,0 +1,48 @@
+<div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+  <div>
+    <h1 class="text-2xl font-semibold m-0">Mis organizaciones</h1>
+    <p class="subtext text-sm mt-1 mb-0">Elegí una organización para ver sus grupos, proyectos y miembros.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="dialogOpen.set(true)">
+    <i class="pi pi-plus"></i> Nueva organización
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="subtext text-sm py-10 text-center"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+} @else if (organizations().length === 0) {
+  <div class="card p-10 text-center">
+    <i class="pi pi-building text-4xl subtext"></i>
+    <p class="mt-3 mb-1 font-semibold">Todavía no pertenecés a ninguna organización</p>
+    <p class="subtext text-sm m-0">Creá una nueva o unite con un link de invitación.</p>
+  </div>
+} @else {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+    @for (org of organizations(); track org.id; let i = $index) {
+      <a [routerLink]="['/organizations', org.id]" class="tile p-5 flex flex-col gap-6 min-h-[140px] hover:brightness-110 transition"
+        [style.background]="color(i)">
+        <div class="flex items-start justify-between gap-2">
+          <span class="text-lg font-bold leading-tight">{{ org.name }}</span>
+          <i class="pi pi-arrow-right"></i>
+        </div>
+        <div class="mt-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide">
+          <span class="bg-black/20 px-2 py-1">{{ roleLabels[org.role] }}</span>
+          <span class="bg-black/20 px-2 py-1">Plan {{ org.plan }}</span>
+        </div>
+      </a>
+    }
+  </div>
+}
+
+<!-- Unirse con invitación -->
+<section class="card p-5 mt-6 max-w-xl">
+  <div class="section-label subtext mb-2">Unirme con una invitación</div>
+  <form class="flex gap-2" (ngSubmit)="join()">
+    <input class="field-input" name="token" [ngModel]="joinToken()" (ngModelChange)="joinToken.set($event)"
+      placeholder="Pegá el código o link de invitación" autocomplete="off" />
+    <button type="submit" class="btn btn-primary flex-none" [disabled]="!joinToken().trim() || joining()">Unirme</button>
+  </form>
+</section>
+
+<app-name-dialog [(visible)]="dialogOpen" header="Nueva organización" placeholder="Ej: NORTE Studio"
+  [saving]="creating()" (save)="create($event)" />

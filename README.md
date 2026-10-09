@@ -71,19 +71,51 @@ Para "cerrar sesión", hacé clic en el avatar o borrá el token con `localStora
 ```
 src/app/
 ├── core/
+│   ├── config.ts       # API_URL
+│   ├── models.ts       # interfaces (Organization, Group, Project, Task…) y etiquetas de roles/estados
 │   ├── guards/         # authGuard: protege rutas si no hay token
 │   ├── interceptors/   # agrega "Authorization: Bearer <token>" a cada request
-│   └── services/       # AuthService: login, logout, me
+│   └── services/
+│       ├── api.service.ts            # cliente JSON:API genérico (list/get/create/update/delete)
+│       ├── auth.service.ts           # login, logout, usuario actual
+│       ├── organizations.service.ts  # organizaciones, miembros e invitaciones
+│       ├── groups.service.ts         # grupos y sus miembros
+│       ├── projects.service.ts
+│       └── tasks.service.ts
 ├── features/
 │   ├── auth/           # layout + pantalla de login
-│   ├── home/           # dashboard (pantalla "Inicio")
+│   ├── shell/          # barra superior común a las pantallas privadas
+│   ├── home/           # dashboard "Inicio" (datos de ejemplo)
+│   ├── organizations/  # ABMs: organizaciones → grupos → proyectos → tareas
 │   └── not-found/      # página 404
-└── shared/primeng/     # módulos de PrimeNG compartidos
+└── shared/
+    ├── primeng/        # módulos de PrimeNG compartidos
+    └── ui/             # NameDialog (diálogo de nombre) y Feedback (toasts y confirmaciones)
 ```
 
-- Rutas principales en `src/app/app.routes.ts`.
-- Configuración global (HttpClient, tema de PrimeNG) en `src/app/app.config.ts`.
-- Estilos globales (Tailwind + PrimeIcons) en `src/styles.css`.
+### Pantallas
+
+| Ruta | Qué se hace |
+| --- | --- |
+| `/organizations` | Ver mis organizaciones, crear una, unirse con código de invitación |
+| `/organizations/:orgId` | Editar/eliminar la org, ABM de grupos, roles de miembros, código de invitación |
+| `/organizations/:orgId/groups/:groupId` | Editar/eliminar el grupo, ABM de proyectos, miembros del grupo |
+| `.../projects/:projectId` | Tablero de tareas: crear, editar, asignar, cambiar estado, eliminar |
+
+### Permisos (los define el backend)
+
+Los botones se muestran según tu rol, pero el que decide es el backend: si algo no está permitido, aparece su mensaje de error.
+
+- **Owner de la org**: edita/elimina la organización, crea proyectos, nombra group leads.
+- **Owner/Admin**: gestiona grupos, roles de miembros e invitaciones.
+- **Group lead**: agrega miembros al grupo y crea/edita/elimina tareas.
+- **Miembros del grupo**: cambian el estado de las tareas.
+
+Para probar cada rol, usá los usuarios que crea `POST /api/v1/dev/seed` (`owner`, `admin`, `member`, `grouplead`, `contributor`).
+
+- Rutas en `src/app/app.routes.ts`.
+- Configuración global (HttpClient, tema de PrimeNG, toasts) en `src/app/app.config.ts`.
+- Estilos globales y tema claro/oscuro en `src/styles.css`.
 
 ## Problemas comunes
 

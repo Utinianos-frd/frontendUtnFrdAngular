@@ -1,0 +1,51 @@
+<div class="min-h-screen transition-colors" style="background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif">
+
+  <header class="sticky top-4 z-10 mx-4 md:mx-6 my-5 flex flex-wrap items-stretch gap-3">
+    <div class="flex-[1_1_560px] min-w-0 rounded-2xl flex items-center gap-1 px-3.5 py-1.5"
+      style="background: var(--nav-bg); box-shadow: var(--nav-shadow)">
+      <a routerLink="/home" class="flex-none mr-4">
+        <img src="assets/img/tasker_logo.png" alt="Tasker" class="h-16 w-auto object-contain" />
+      </a>
+
+      <nav class="flex gap-px flex-1 min-w-0 overflow-x-auto whitespace-nowrap" style="scrollbar-width: none">
+        @for (tab of tabs; track tab.path) {
+          <a [routerLink]="tab.path" routerLinkActive="bg-[#6C3CE9] !text-white"
+            class="flex-none rounded-[10px] px-2.5 py-2 text-xs font-semibold subtext">{{ tab.label }}</a>
+        }
+      </nav>
+
+      <button type="button" (click)="toggleTheme()" title="Cambiar tema"
+        class="w-[42px] h-[26px] rounded-full flex items-center p-0.5 cursor-pointer flex-none"
+        style="background: var(--toggle-bg)">
+        <span class="w-5 h-5 rounded-full flex items-center justify-center transition-transform"
+          [class.translate-x-4]="dark()" style="background: var(--knob-bg)">
+          <i class="pi text-[11px]" [class]="dark() ? 'pi-moon text-[#cfd0e6]' : 'pi-sun text-[#f5a623]'"></i>
+        </span>
+      </button>
+      <button type="button" class="icon-btn rounded-[10px] flex-none" title="Buscar"><i class="pi pi-search"></i></button>
+      <button type="button" class="icon-btn rounded-[10px] flex-none" title="Notificaciones"><i class="pi pi-bell"></i></button>
+      <button type="button" (click)="logout()" title="Cerrar sesión"
+        class="w-8 h-8 rounded-[10px] bg-[#6C3CE9] text-white flex items-center justify-center text-[11px] font-bold flex-none cursor-pointer">
+        {{ initials() }}
+      </button>
+    </div>
+
+    <div class="flex-[1_1_220px] min-w-0 rounded-2xl flex items-center gap-3 px-4 py-1.5 text-white overflow-hidden bg-gradient-to-br from-[#0050EF] to-[#6A00FF]"
+      style="box-shadow: var(--nav-shadow)">
+      <div class="w-[34px] h-[34px] rounded-[10px] bg-white/20 flex items-center justify-center text-sm font-extrabold flex-none">
+        {{ initials().charAt(0) }}
+      </div>
+      <div class="min-w-0">
+        <div class="text-[15px] font-bold leading-tight truncate">Buen día{{ username() ? ', ' + username() : '' }}</div>
+        <div class="text-[11.5px] text-white/80 truncate">Tasker</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-4 md:px-8 pt-2 pb-16">
+    <router-outlet />
+  </main>
+
+  <p-toast position="bottom-right" />
+  <p-confirmdialog />
+</div>

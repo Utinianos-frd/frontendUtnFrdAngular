@@ -2,3 +2,147 @@
 
 @import 'tailwindcss';
 @import 'primeicons/primeicons.css';
+
+/* Tema de la app. El modo oscuro se activa con la clase .app-dark en <html>
+   (la misma que usa PrimeNG, ver darkModeSelector en app.config.ts). */
+:root {
+  --bg: #ffffff;
+  --nav-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text: #1c1c24;
+  --subtext: rgba(28, 28, 36, 0.55);
+  --divider: rgba(28, 28, 36, 0.08);
+  --chip-bg: rgba(28, 28, 36, 0.06);
+  --toggle-bg: #e2e0ea;
+  --knob-bg: #ffffff;
+  --card-shadow: 0 6px 18px rgba(28, 28, 36, 0.1);
+  --tile-shadow: 0 10px 22px rgba(28, 28, 36, 0.22);
+  --nav-shadow: 0 8px 24px rgba(28, 28, 36, 0.25);
+  --accent: #6c3ce9;
+}
+
+:root.app-dark {
+  --bg: #1b1b1b;
+  --nav-bg: #242424;
+  --card-bg: #2b2b2b;
+  --text: #ffffff;
+  --subtext: rgba(255, 255, 255, 0.55);
+  --divider: rgba(255, 255, 255, 0.1);
+  --chip-bg: rgba(255, 255, 255, 0.12);
+  --toggle-bg: #3a3a3a;
+  --knob-bg: #1b1b1b;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --tile-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  --nav-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.subtext {
+  color: var(--subtext);
+}
+
+/* Mosaico de color (estilo Metro) */
+.tile {
+  box-shadow: var(--tile-shadow);
+  color: #fff;
+}
+
+/* Tarjeta neutra que sigue el tema */
+.card {
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  color: var(--text);
+}
+
+.divider {
+  border-color: var(--divider);
+}
+
+.chip {
+  background: var(--chip-bg);
+}
+
+/* Botones planos, al estilo del diseño */
+.btn {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: none;
+  transition: filter 0.15s, background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--divider);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--chip-bg);
+}
+
+.btn-danger {
+  background: #a20025;
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--subtext);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--chip-bg);
+  color: var(--text);
+}
+
+.icon-btn.danger:hover {
+  color: #e51400;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.field-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--divider);
+  background: transparent;
+  color: var(--text);
+}

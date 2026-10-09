@@ -1,0 +1,124 @@
+<nav class="text-xs font-semibold subtext mb-1">
+  <a routerLink="/organizations" class="hover:underline">Organizaciones</a>
+</nav>
+
+@if (loading()) {
+  <div class="subtext text-sm py-10 text-center"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+} @else if (org(); as org) {
+  <!-- Encabezado -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+    <div>
+      <h1 class="text-2xl font-semibold m-0">{{ org.name }}</h1>
+      <p class="subtext text-sm mt-1 mb-0">
+        Plan {{ org.plan }} · {{ members().length }} miembros · {{ groups().length }} grupos · Tu rol: {{ roleLabels[org.role] }}
+      </p>
+    </div>
+    @if (isOwner()) {
+      <div class="flex gap-2">
+        <button type="button" class="btn btn-ghost" (click)="openDialog('edit-org')"><i class="pi pi-pencil"></i> Editar</button>
+        <button type="button" class="btn btn-danger" (click)="deleteOrg()"><i class="pi pi-trash"></i> Eliminar</button>
+      </div>
+    }
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-3">
+    <!-- Grupos -->
+    <section class="tile bg-[#0050EF] p-5 self-start">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-label">Grupos</span>
+        @if (isAdmin()) {
+          <button type="button" class="btn bg-white text-[#6C3CE9] hover:brightness-95" (click)="openDialog('create-group')">
+            <i class="pi pi-plus"></i> Crear grupo
+          </button>
+        }
+      </div>
+
+      <div class="flex flex-col gap-2">
+        @for (group of groups(); track group.id) {
+          <div class="flex items-center justify-between gap-2 p-3 bg-black/20">
+            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="flex-1 min-w-0 text-sm font-semibold truncate hover:underline">
+              {{ group.name }}
+            </a>
+            @if (isAdmin()) {
+              <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Editar" (click)="openDialog('edit-group', group)">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Eliminar" (click)="deleteGroup(group)">
+                <i class="pi pi-trash"></i>
+              </button>
+            }
+            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="text-xs font-bold">Ver →</a>
+          </div>
+        } @empty {
+          <p class="text-sm text-white/80 m-0">Esta organización todavía no tiene grupos.</p>
+        }
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-3">
+      <!-- Miembros -->
+      <section class="card p-5">
+        <div class="section-label subtext mb-3">Miembros</div>
+        <div class="flex flex-col">
+          @for (m of members(); track m.user_id) {
+            <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-7 h-7 bg-[#0050EF] text-white flex items-center justify-center text-[10px] font-bold flex-none">
+                  {{ m.username.slice(0, 2).toUpperCase() }}
+                </span>
+                <span class="text-sm truncate">
+                  {{ m.username }}
+                  @if (m.user_id === currentUserId()) { <span class="subtext">(vos)</span> }
+                </span>
+              </div>
+
+              @if (isAdmin() && m.role !== 'owner' && m.user_id !== currentUserId()) {
+                <div class="flex items-center gap-1">
+                  <p-select [options]="roleOptions" optionLabel="label" optionValue="value" size="small"
+                    [ngModel]="m.role" (ngModelChange)="changeRole(m, $event)" appendTo="body" />
+                  <button type="button" class="icon-btn danger" title="Quitar de la organización" (click)="removeMember(m)">
+                    <i class="pi pi-user-minus"></i>
+                  </button>
+                </div>
+              } @else {
+                <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
+                  [class]="m.role === 'owner' ? 'bg-[#D80073]' : m.role === 'admin' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">
+                  {{ roleLabels[m.role] }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Invitación -->
+      @if (isAdmin()) {
+        <section class="card p-5">
+          <div class="section-label subtext mb-3">Invitación</div>
+          @if (invitation()?.active) {
+            <p class="subtext text-sm mt-0 mb-2">Compartí este código para que otras personas se unan a la organización.</p>
+            <div class="flex gap-2">
+              <code class="field-input !text-xs truncate">{{ invitation()!.token }}</code>
+              <button type="button" class="btn btn-primary flex-none" (click)="copyInvite()"><i class="pi pi-copy"></i> Copiar</button>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button type="button" class="btn btn-ghost" (click)="regenerateInvite()"><i class="pi pi-refresh"></i> Regenerar</button>
+              <button type="button" class="btn btn-ghost" (click)="deactivateInvite()"><i class="pi pi-ban"></i> Desactivar</button>
+            </div>
+          } @else {
+            <p class="subtext text-sm mt-0 mb-3">No hay una invitación activa.</p>
+            <button type="button" class="btn btn-primary" (click)="regenerateInvite()"><i class="pi pi-link"></i> Generar código</button>
+          }
+        </section>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="card p-10 text-center">
+    <p class="font-semibold mb-3">No se pudo cargar la organización.</p>
+    <a routerLink="/organizations" class="btn btn-primary">Volver</a>
+  </div>
+}
+
+<app-name-dialog [visible]="dialogOpen()" (visibleChange)="onDialogVisibleChange($event)" [header]="dialogHeader()"
+  [initialValue]="dialogInitial()" [saving]="saving()" (save)="onDialogSave($event)" />

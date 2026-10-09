@@ -1,140 +1,86 @@
-<div class="home" [class.dark]="dark()">
+<!-- Datos de ejemplo: todavía no hay endpoints de estadísticas. -->
+<div class="grid grid-cols-2 md:grid-cols-4 md:auto-rows-[148px] gap-3.5 mt-2">
 
-  <!-- Barra superior -->
-  <header class="sticky top-4 z-10 mx-4 md:mx-6 my-5 flex flex-wrap items-stretch gap-3">
-    <div class="nav-card flex-[1_1_560px] min-w-0 rounded-2xl flex items-center gap-1 px-3.5 py-1.5">
-      <img src="assets/img/tasker_logo.png" alt="Tasker" class="h-16 w-auto object-contain mr-4 flex-none" />
-
-      <nav class="tabs flex gap-px flex-1 min-w-0 overflow-x-auto whitespace-nowrap">
-        @for (tab of tabs; track tab.id) {
-          <button
-            type="button"
-            (click)="activeTab.set(tab.id)"
-            class="flex-none rounded-[10px] px-2.5 py-2 text-xs font-semibold cursor-pointer"
-            [class]="activeTab() === tab.id ? 'bg-[#6C3CE9] text-white' : 'subtext bg-transparent'"
-          >{{ tab.label }}</button>
+    <!-- Grupos -->
+    <section class="tile col-span-2 md:row-span-2 bg-[#0050EF] p-[18px] flex flex-col gap-2">
+      <i class="pi pi-users text-2xl"></i>
+      <div class="flex-1 flex flex-col gap-2 justify-center">
+        @for (g of groups; track g.name) {
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm font-semibold">{{ g.name }}</div>
+              <div class="text-[11px] text-white/75">{{ g.lead }} · {{ g.projects }} proy · {{ g.members }} miembros</div>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wide">{{ g.load }}</span>
+          </div>
         }
-      </nav>
-
-      <button type="button" (click)="toggleTheme()" title="Cambiar tema"
-        class="toggle w-[42px] h-[26px] rounded-full flex items-center p-0.5 cursor-pointer flex-none">
-        <span class="knob w-5 h-5 rounded-full flex items-center justify-center">
-          <i class="pi text-[11px]" [class]="dark() ? 'pi-moon text-[#cfd0e6]' : 'pi-sun text-[#f5a623]'"></i>
-        </span>
-      </button>
-      <button type="button" class="subtext w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-none cursor-pointer">
-        <i class="pi pi-search"></i>
-      </button>
-      <button type="button" class="subtext w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-none cursor-pointer">
-        <i class="pi pi-bell"></i>
-      </button>
-      <button type="button" (click)="logout()" title="Cerrar sesión"
-        class="w-8 h-8 rounded-[10px] bg-[#6C3CE9] text-white flex items-center justify-center text-[11px] font-bold flex-none cursor-pointer">
-        {{ initials() }}
-      </button>
-    </div>
-
-    <div class="flex-[1_1_220px] min-w-0 rounded-2xl flex items-center gap-3 px-4 py-1.5 text-white overflow-hidden bg-gradient-to-br from-[#0050EF] to-[#6A00FF]"
-      style="box-shadow: var(--nav-shadow)">
-      <div class="w-[34px] h-[34px] rounded-[10px] bg-white/20 flex items-center justify-center text-sm font-extrabold flex-none">
-        {{ initials().charAt(0) }}
       </div>
-      <div class="min-w-0">
-        <div class="text-[15px] font-bold leading-tight truncate">Buen día{{ username() ? ', ' + username() : '' }}</div>
-        <div class="text-[11.5px] text-white/80 truncate">4 tareas bloqueadas · Producto con carga alta</div>
+      <div class="text-[11px] font-bold uppercase tracking-wide">Grupos</div>
+    </section>
+
+    <!-- Miembros -->
+    <section class="tile bg-[#008A00] p-4 flex flex-col justify-between min-h-[120px]">
+      <div class="text-[34px] font-extrabold">17</div>
+      <div class="text-[11px] font-bold uppercase">Miembros</div>
+    </section>
+
+    <!-- Bloqueadas -->
+    <section class="tile bg-[#A20025] p-4 flex flex-col justify-between min-h-[120px]">
+      <div class="text-[34px] font-extrabold">4</div>
+      <div class="text-[11px] font-bold uppercase">Bloqueadas</div>
+    </section>
+
+    <!-- Carga del equipo -->
+    <section class="tile col-span-2 bg-[#00ABA9] p-4 flex flex-col gap-2.5">
+      <div class="text-[11px] font-bold uppercase">Carga del equipo</div>
+      <div class="flex gap-[18px] items-center flex-1">
+        @for (w of workloadMini; track w.initials) {
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="w-8 h-8 bg-black/20 flex items-center justify-center text-[11px] font-bold">{{ w.initials }}</div>
+            <span class="text-[9px] font-bold uppercase">{{ w.status }}</span>
+          </div>
+        }
       </div>
-    </div>
-  </header>
+    </section>
 
-  <main class="px-4 md:px-8 pt-2 pb-16">
-    @if (activeTab() === 'inicio') {
-      <div class="grid grid-cols-2 md:grid-cols-4 md:auto-rows-[148px] gap-3.5 mt-2">
-
-        <!-- Grupos -->
-        <section class="tile col-span-2 md:row-span-2 bg-[#0050EF] p-[18px] flex flex-col gap-2">
-          <i class="pi pi-users text-2xl"></i>
-          <div class="flex-1 flex flex-col gap-2 justify-center">
-            @for (g of groups; track g.name) {
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm font-semibold">{{ g.name }}</div>
-                  <div class="text-[11px] text-white/75">{{ g.lead }} · {{ g.projects }} proy · {{ g.members }} miembros</div>
-                </div>
-                <span class="text-[10px] font-bold uppercase tracking-wide">{{ g.load }}</span>
-              </div>
-            }
+    <!-- Actividad reciente -->
+    <section class="tile col-span-2 md:row-span-2 bg-[#AA00FF] p-[18px] flex flex-col gap-2.5">
+      <div class="text-[11px] font-bold uppercase">Actividad reciente</div>
+      <div class="flex flex-col gap-2.5">
+        @for (a of activity; track $index) {
+          <div class="flex flex-col gap-0.5 pb-2 border-b border-white/20">
+            <span class="text-[13px]">{{ a.text }}</span>
+            <span class="text-[11px] text-white/70">{{ a.time }}</span>
           </div>
-          <div class="text-[11px] font-bold uppercase tracking-wide">Grupos</div>
-        </section>
-
-        <!-- Miembros -->
-        <section class="tile bg-[#008A00] p-4 flex flex-col justify-between min-h-[120px]">
-          <div class="text-[34px] font-extrabold">17</div>
-          <div class="text-[11px] font-bold uppercase">Miembros</div>
-        </section>
-
-        <!-- Bloqueadas -->
-        <section class="tile bg-[#A20025] p-4 flex flex-col justify-between min-h-[120px]">
-          <div class="text-[34px] font-extrabold">4</div>
-          <div class="text-[11px] font-bold uppercase">Bloqueadas</div>
-        </section>
-
-        <!-- Carga del equipo -->
-        <section class="tile col-span-2 bg-[#00ABA9] p-4 flex flex-col gap-2.5">
-          <div class="text-[11px] font-bold uppercase">Carga del equipo</div>
-          <div class="flex gap-[18px] items-center flex-1">
-            @for (w of workloadMini; track w.initials) {
-              <div class="flex flex-col items-center gap-1.5">
-                <div class="w-8 h-8 bg-black/20 flex items-center justify-center text-[11px] font-bold">{{ w.initials }}</div>
-                <span class="text-[9px] font-bold uppercase">{{ w.status }}</span>
-              </div>
-            }
-          </div>
-        </section>
-
-        <!-- Actividad reciente -->
-        <section class="tile col-span-2 md:row-span-2 bg-[#AA00FF] p-[18px] flex flex-col gap-2.5">
-          <div class="text-[11px] font-bold uppercase">Actividad reciente</div>
-          <div class="flex flex-col gap-2.5">
-            @for (a of activity; track $index) {
-              <div class="flex flex-col gap-0.5 pb-2 border-b border-white/20">
-                <span class="text-[13px]">{{ a.text }}</span>
-                <span class="text-[11px] text-white/70">{{ a.time }}</span>
-              </div>
-            }
-          </div>
-        </section>
-
-        <!-- Accesos rápidos -->
-        <section class="tile col-span-2 bg-[#D80073] p-4 flex flex-col gap-2.5 justify-center">
-          <div class="text-[11px] font-bold uppercase">Accesos rápidos</div>
-          <div class="flex gap-2 flex-wrap">
-            <button type="button" class="text-xs font-semibold text-white bg-black/20 hover:bg-black/35 px-3.5 py-2 cursor-pointer transition-colors">Crear grupo</button>
-            <button type="button" class="text-xs font-semibold text-[#6C3CE9] bg-white hover:brightness-95 px-3.5 py-2 cursor-pointer">Invitar</button>
-          </div>
-        </section>
-
-        <!-- Activos -->
-        <section class="tile bg-[#F0A30A] p-4 flex flex-col gap-1 justify-center min-h-[100px]">
-          <div class="text-[22px] font-extrabold">17</div>
-          <div class="text-[10px] font-bold uppercase">Activos</div>
-        </section>
-
-        <!-- Plan -->
-        <section class="tile bg-[#A4C400] p-4 flex flex-col gap-1 justify-center min-h-[100px]">
-          <div class="text-sm font-extrabold">Plan {{ planTier }}</div>
-          <div class="text-[10px] font-bold uppercase">Sin límite</div>
-        </section>
+        }
       </div>
-    } @else {
-      <div class="subtext text-center py-24 text-sm">Esta sección está en construcción.</div>
-    }
-  </main>
+    </section>
 
-  <!-- Botón de Modo Foco -->
-  <button type="button" title="Modo Foco"
-    class="fixed bottom-7 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-[#6A00FF] text-white flex items-center justify-center cursor-pointer z-40 hover:brightness-110"
-    style="box-shadow: 0 10px 26px rgba(0,0,0,0.45)">
-    <i class="pi pi-stopwatch text-2xl"></i>
-  </button>
-</div>
+    <!-- Accesos rápidos -->
+    <section class="tile col-span-2 bg-[#D80073] p-4 flex flex-col gap-2.5 justify-center">
+      <div class="text-[11px] font-bold uppercase">Accesos rápidos</div>
+      <div class="flex gap-2 flex-wrap">
+        <a routerLink="/organizations" class="text-xs font-semibold text-white bg-black/20 hover:bg-black/35 px-3.5 py-2 transition-colors">Mis organizaciones</a>
+        <button type="button" class="text-xs font-semibold text-[#6C3CE9] bg-white hover:brightness-95 px-3.5 py-2 cursor-pointer">Invitar</button>
+      </div>
+    </section>
+
+    <!-- Activos -->
+    <section class="tile bg-[#F0A30A] p-4 flex flex-col gap-1 justify-center min-h-[100px]">
+      <div class="text-[22px] font-extrabold">17</div>
+      <div class="text-[10px] font-bold uppercase">Activos</div>
+    </section>
+
+    <!-- Plan -->
+    <section class="tile bg-[#A4C400] p-4 flex flex-col gap-1 justify-center min-h-[100px]">
+      <div class="text-sm font-extrabold">Plan {{ planTier }}</div>
+      <div class="text-[10px] font-bold uppercase">Sin límite</div>
+    </section>
+  </div>
+
+<!-- Botón de Modo Foco -->
+<button type="button" title="Modo Foco"
+  class="fixed bottom-7 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-[#6A00FF] text-white flex items-center justify-center cursor-pointer z-40 hover:brightness-110"
+  style="box-shadow: 0 10px 26px rgba(0,0,0,0.45)">
+  <i class="pi pi-stopwatch text-2xl"></i>
+</button>

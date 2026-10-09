@@ -1,0 +1,116 @@
+<nav class="text-xs font-semibold subtext mb-1 flex flex-wrap gap-1">
+  <a routerLink="/organizations" class="hover:underline">Organizaciones</a> /
+  <a [routerLink]="['/organizations', orgId()]" class="hover:underline">{{ org()?.name ?? '…' }}</a> /
+  <a [routerLink]="['/organizations', orgId(), 'groups', groupId()]" class="hover:underline">{{ group()?.name ?? '…' }}</a>
+</nav>
+
+@if (loading()) {
+  <div class="subtext text-sm py-10 text-center"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+} @else if (project(); as project) {
+  <!-- Encabezado -->
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
+    <div>
+      <h1 class="text-2xl font-semibold m-0">{{ project.name }}</h1>
+      <p class="subtext text-sm mt-1 mb-0">Tablero de tareas · {{ tasks().length }} tareas</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      @if (isGroupLead()) {
+        <button type="button" class="btn btn-primary" (click)="openTaskDialog()"><i class="pi pi-plus"></i> Nueva tarea</button>
+      }
+      @if (isOrgOwner()) {
+        <button type="button" class="btn btn-ghost" (click)="projectDialogOpen.set(true)"><i class="pi pi-pencil"></i> Renombrar</button>
+        <button type="button" class="btn btn-danger" (click)="deleteProject()"><i class="pi pi-trash"></i> Eliminar</button>
+      }
+    </div>
+  </div>
+
+  @if (!isGroupMember()) {
+    <div class="card p-3 mb-4 text-sm subtext">
+      <i class="pi pi-info-circle mr-1"></i>
+      No sos miembro de este grupo: podés ver el tablero, pero solo los miembros pueden mover tareas y solo el group lead puede crearlas.
+    </div>
+  }
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    @for (col of columns(); track col.status) {
+      <div class="flex flex-col gap-2.5">
+        <div class="tile px-3 py-2 flex items-center justify-between text-[11px] font-bold uppercase" [style.background]="col.color">
+          <span>{{ col.label }} · {{ col.tasks.length }}</span>
+          @if (isGroupLead()) {
+            <button type="button" class="text-white/90 hover:text-white cursor-pointer" title="Agregar tarea"
+              (click)="openTaskDialog(null, col.status)"><i class="pi pi-plus text-xs"></i></button>
+          }
+        </div>
+
+        @for (task of col.tasks; track task.id) {
+          <div class="card p-3.5 flex flex-col gap-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-sm font-semibold leading-snug" [class.line-through]="task.status === 'done'"
+                [class.subtext]="task.status === 'done'">{{ task.title }}</span>
+              @if (isGroupLead()) {
+                <div class="flex flex-none -mr-1 -mt-1">
+                  <button type="button" class="icon-btn" title="Editar" (click)="openTaskDialog(task)"><i class="pi pi-pencil text-xs"></i></button>
+                  <button type="button" class="icon-btn danger" title="Eliminar" (click)="deleteTask(task)"><i class="pi pi-trash text-xs"></i></button>
+                </div>
+              }
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex gap-1" [title]="assigneeNames(task)">
+                @for (ini of assigneeInitials(task); track $index) {
+                  <span class="w-6 h-6 chip flex items-center justify-center text-[10px] font-bold">{{ ini }}</span>
+                } @empty {
+                  <span class="text-[11px] subtext">Sin asignar</span>
+                }
+              </div>
+              @if (isGroupMember()) {
+                <p-select [options]="statusOptions" optionLabel="label" optionValue="value" size="small"
+                  [ngModel]="task.status" (ngModelChange)="changeStatus(task, $event)" appendTo="body" />
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="text-xs subtext text-center py-6 border border-dashed divider">Sin tareas</div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="card p-10 text-center">
+    <p class="font-semibold mb-3">No se pudo cargar el proyecto.</p>
+    <a [routerLink]="['/organizations', orgId(), 'groups', groupId()]" class="btn btn-primary">Volver</a>
+  </div>
+}
+
+<!-- Crear / editar tarea -->
+<p-dialog [header]="editingTask() ? 'Editar tarea' : 'Nueva tarea'" [visible]="taskDialogOpen()"
+  (visibleChange)="taskDialogOpen.set($event)" [modal]="true" [style]="{ width: '28rem' }" [draggable]="false">
+  <form (ngSubmit)="saveTask()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="task-title" class="text-sm font-medium">Título</label>
+      <input pInputText id="task-title" name="title" autocomplete="off" class="w-full" placeholder="Ej: Escribir tests de login"
+        [ngModel]="form().title" (ngModelChange)="updateForm({ title: $event })" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="task-status" class="text-sm font-medium">Estado</label>
+      <p-select inputId="task-status" name="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+        [ngModel]="form().status" (ngModelChange)="updateForm({ status: $event })" appendTo="body" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="task-assignees" class="text-sm font-medium">Asignados</label>
+      <p-multiselect inputId="task-assignees" name="assignees" [options]="memberOptions()" optionLabel="label" optionValue="value"
+        placeholder="Miembros del grupo" display="chip" [ngModel]="form().assignee_ids"
+        (ngModelChange)="updateForm({ assignee_ids: $event })" appendTo="body" />
+    </div>
+    <div class="flex justify-end gap-2">
+      <button type="button" class="btn btn-ghost" (click)="taskDialogOpen.set(false)">Cancelar</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!form().title.trim() || savingTask()">
+        @if (savingTask()) { <i class="pi pi-spin pi-spinner"></i> }
+        Guardar
+      </button>
+    </div>
+  </form>
+</p-dialog>
+
+<app-name-dialog [(visible)]="projectDialogOpen" header="Renombrar proyecto" [initialValue]="project()?.name ?? ''"
+  [saving]="savingProject()" (save)="renameProject($event)" />

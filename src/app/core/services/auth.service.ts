@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, Observable, tap } from 'rxjs';
+import { API_URL } from '../config';
 
-const API_URL = 'http://localhost:8000/api/v1';
 const TOKEN_KEY = 'token';
 const REFRESH_KEY = 'refresh_token';
 
@@ -12,10 +12,19 @@ interface Tokens {
     refresh?: string;
 }
 
+export interface CurrentUser {
+    id: number;
+    username: string;
+    email: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private http = inject(HttpClient);
     private router = inject(Router);
+
+    /** Usuario logueado. Se completa al llamar a loadCurrentUser(). */
+    readonly currentUser = signal<CurrentUser | null>(null);
 
     login(username: string, password: string): Observable<void> {
         const body = { data: { type: 'sessions', attributes: { username, password } } };
@@ -30,13 +39,17 @@ export class AuthService {
         );
     }
 
-    me(): Observable<any> {
-        return this.http.get<any>(`${API_URL}/auth/me`);
+    loadCurrentUser(): Observable<CurrentUser> {
+        return this.http.get<any>(`${API_URL}/auth/me`).pipe(
+            map(res => ({ id: Number(res.data.id), ...res.data.attributes }) as CurrentUser),
+            tap(user => this.currentUser.set(user))
+        );
     }
 
     logout(): void {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(REFRESH_KEY);
+        this.currentUser.set(null);
         this.router.navigate(['/auth/login']);
     }
 

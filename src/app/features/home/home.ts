@@ -1,7 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { AuthService } from '../../core/services/auth.service';
-
-type Tab = 'inicio' | 'tablero' | 'workload' | 'organizacion';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 interface Group {
   name: string;
@@ -11,29 +9,13 @@ interface Group {
   load: string;
 }
 
+/** Pantalla "Inicio". Por ahora muestra datos de ejemplo del diseño. */
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './home.html',
-  styleUrl: './home.css',
 })
-export class Home implements OnInit {
-  private authService = inject(AuthService);
-
-  readonly tabs: { id: Tab; label: string }[] = [
-    { id: 'inicio', label: 'Inicio' },
-    { id: 'tablero', label: 'Tablero' },
-    { id: 'workload', label: 'Workload' },
-    { id: 'organizacion', label: 'Organización' },
-  ];
-
-  activeTab = signal<Tab>('inicio');
-  dark = signal(false);
-  username = signal('');
-
-  initials = computed(() => this.username().slice(0, 2).toUpperCase() || '?');
-
-  // Datos de ejemplo hasta que existan los endpoints correspondientes.
+export class Home {
   readonly planTier = 'Pro';
 
   readonly groups: Group[] = [
@@ -54,22 +36,4 @@ export class Home implements OnInit {
     { initials: 'DP', status: 'Sobrecargado' },
     { initials: 'SA', status: 'Ocupado' },
   ];
-
-  ngOnInit(): void {
-    this.authService.me().subscribe({
-      next: res => {
-        const attrs = res?.data?.attributes ?? res?.data ?? res ?? {};
-        this.username.set(attrs.username ?? attrs.first_name ?? '');
-      },
-      error: () => this.username.set(''),
-    });
-  }
-
-  toggleTheme(): void {
-    this.dark.update(d => !d);
-  }
-
-  logout(): void {
-    this.authService.logout();
-  }
 }
