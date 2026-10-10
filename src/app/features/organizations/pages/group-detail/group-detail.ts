@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import {
-  Group, GroupMember, GroupRole, GROUP_ROLE_LABELS, Organization, OrgMember, Project,
+  Group, GroupMember, GROUP_ROLE_LABELS, Organization, OrgMember, Project,
 } from '../../../../core/models';
 import { AuthService } from '../../../../core/services/auth.service';
 import { GroupsService } from '../../../../core/services/groups.service';
@@ -34,7 +34,6 @@ export class GroupDetail implements OnInit {
   private router = inject(Router);
 
   readonly roleLabels = GROUP_ROLE_LABELS;
-  readonly roleOptions = (['group_lead', 'contributor'] as GroupRole[]).map(value => ({ value, label: GROUP_ROLE_LABELS[value] }));
 
   org = signal<Organization | null>(null);
   group = signal<Group | null>(null);
@@ -47,14 +46,26 @@ export class GroupDetail implements OnInit {
   editingProject = signal<Project | null>(null);
   saving = signal(false);
   userToAdd = signal<number | null>(null);
+  leadCandidate = signal<number | null>(null);
+  assigningLead = signal(false);
 
   currentUserId = computed(() => this.auth.currentUser()?.id);
   isOrgOwner = computed(() => this.org()?.role === 'owner');
-  isOrgAdmin = computed(() => this.org()?.role === 'owner' || this.org()?.role === 'admin');
-  isGroupLead = computed(() =>
-    this.members().some(m => m.user_id === this.currentUserId() && m.role === 'group_lead')
+  /** El workload lo ven el owner, los admins y el líder del grupo. */
+  canSeeWorkload = computed(() => this.org()?.role === 'owner' || this.org()?.role === 'admin' || this.isGroupLead());
+
+  lead = computed(() => this.members().find(m => m.role === 'group_lead') ?? null);
+  isGroupLead = computed(() => this.lead()?.user_id === this.currentUserId());
+
+  /**
+   * Cualquier miembro de la organización puede ser líder, esté o no en el grupo
+   * (si no está, el backend lo agrega). El líder anterior pasa a contributor.
+   */
+  leadCandidates = computed(() =>
+    this.orgMembers()
+      .filter(m => m.user_id !== this.lead()?.user_id)
+      .map(m => ({ value: m.user_id, label: m.username }))
   );
-  canManageMembers = computed(() => this.isGroupLead() || this.isOrgOwner());
 
   /** Miembros de la organización que todavía no están en el grupo. */
   addableUsers = computed(() => {
@@ -203,19 +214,35 @@ export class GroupDetail implements OnInit {
     });
   }
 
-  changeRole(member: GroupMember, role: GroupRole): void {
-    if (role === member.role) return;
-    this.groupsService.changeMemberRole(this.orgId(), this.groupId(), member.user_id, role).subscribe({
-      next: () => {
-        // Puede haber cambiado más de un rol (por ejemplo, si solo hay un group lead), así que recargamos.
-        this.loadMembers();
-        this.feedback.success(`${member.username} ahora es ${GROUP_ROLE_LABELS[role]}`);
-      },
-      error: err => {
-        this.members.update(list => list.map(m => ({ ...m })));
-        this.feedback.error(err);
-      },
-    });
+  /** Asigna el líder del grupo (solo el owner de la organización). */
+  assignLead(userId: number | null = this.leadCandidate()): void {
+    if (userId == null) return;
+    const username = this.orgMembers().find(m => m.user_id === userId)?.username
+      ?? this.members().find(m => m.user_id === userId)?.username ?? 'El usuario';
+    const current = this.lead();
+
+    const doAssign = () => {
+      this.assigningLead.set(true);
+      this.groupsService.changeMemberRole(this.orgId(), this.groupId(), userId, 'group_lead').subscribe({
+        next: () => {
+          this.assigningLead.set(false);
+          this.leadCandidate.set(null);
+          // Cambian dos roles (el nuevo líder y el anterior), así que recargamos.
+          this.loadMembers();
+          this.feedback.success(`${username} es el nuevo líder del grupo`);
+        },
+        error: err => {
+          this.assigningLead.set(false);
+          this.feedback.error(err);
+        },
+      });
+    };
+
+    if (current) {
+      this.feedback.confirm(`¿Hacer líder a ${username}? ${current.username} pasará a ser contributor.`, doAssign);
+    } else {
+      doAssign();
+    }
   }
 
   removeMember(member: GroupMember): void {

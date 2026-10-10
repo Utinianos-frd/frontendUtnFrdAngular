@@ -115,7 +115,7 @@ export class OrganizationDetail implements OnInit {
     const group = this.editingGroup();
 
     const request: Observable<Organization | Group> =
-      mode === 'edit-org' ? this.orgsService.update(orgId, name) :
+      mode === 'edit-org' ? this.orgsService.update(orgId, { name }) :
       mode === 'create-group' ? this.groupsService.create(orgId, name) :
       this.groupsService.update(orgId, group!.id, name);
 
@@ -127,9 +127,13 @@ export class OrganizationDetail implements OnInit {
         if (mode === 'edit-org') {
           this.org.set(result as Organization);
           this.feedback.success('Organización actualizada');
+        } else if (mode === 'create-group') {
+          // Un grupo nuevo no tiene líder: vamos a su página para asignarlo.
+          this.feedback.success('Grupo creado. Ahora asignale un líder.');
+          this.router.navigate(['/organizations', orgId, 'groups', result.id]);
         } else {
           this.loadGroups();
-          this.feedback.success(mode === 'create-group' ? 'Grupo creado' : 'Grupo actualizado');
+          this.feedback.success('Grupo actualizado');
         }
       },
       error: err => {
@@ -173,10 +177,29 @@ export class OrganizationDetail implements OnInit {
 
   changeRole(member: OrgMember, role: OrgRole): void {
     if (role === member.role) return;
+    if (role === 'owner') {
+      // Asignar owner traspasa la propiedad: el owner actual (vos) pasa a admin.
+      this.members.update(list => list.map(m => ({ ...m })));
+      this.feedback.confirm(
+        `¿Transferir la propiedad de la organización a ${member.username}? Vos pasarás a ser Admin.`,
+        () => this.doChangeRole(member, role)
+      );
+      return;
+    }
+    this.doChangeRole(member, role);
+  }
+
+  private doChangeRole(member: OrgMember, role: OrgRole): void {
     this.orgsService.changeMemberRole(this.orgId(), member.user_id, role).subscribe({
       next: updated => {
-        this.members.update(list => list.map(m => (m.user_id === member.user_id ? { ...m, role: updated.role } : m)));
         this.feedback.success(`${member.username} ahora es ${ORG_ROLE_LABELS[updated.role]}`);
+        if (role === 'owner') {
+          // Cambió también nuestro rol: recargamos la organización y los miembros.
+          this.orgsService.get(this.orgId()).subscribe(org => this.org.set(org));
+          this.loadMembers();
+        } else {
+          this.members.update(list => list.map(m => (m.user_id === member.user_id ? { ...m, role: updated.role } : m)));
+        }
       },
       error: err => {
         // Fuerza a que el select vuelva al valor original.

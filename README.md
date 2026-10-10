@@ -81,12 +81,14 @@ src/app/
 │       ├── organizations.service.ts  # organizaciones, miembros e invitaciones
 │       ├── groups.service.ts         # grupos y sus miembros
 │       ├── projects.service.ts
-│       └── tasks.service.ts
+│       ├── tasks.service.ts
+│       └── workload.service.ts       # carga de trabajo por grupo y por miembro
 ├── features/
 │   ├── auth/           # layout + pantalla de login
 │   ├── shell/          # barra superior común a las pantallas privadas
 │   ├── home/           # dashboard "Inicio" (datos de ejemplo)
 │   ├── organizations/  # ABMs: organizaciones → grupos → proyectos → tareas
+│   ├── workload/       # panel de carga de trabajo
 │   └── not-found/      # página 404
 └── shared/
     ├── primeng/        # módulos de PrimeNG compartidos
@@ -101,15 +103,18 @@ src/app/
 | `/organizations/:orgId` | Editar/eliminar la org, ABM de grupos, roles de miembros, código de invitación |
 | `/organizations/:orgId/groups/:groupId` | Editar/eliminar el grupo, ABM de proyectos, miembros del grupo |
 | `.../projects/:projectId` | Tablero de tareas: crear, editar, asignar, cambiar estado, eliminar |
+| `/workload?org=…&group=…` | Carga de trabajo de un grupo: tareas activas por miembro, estado (disponible/ocupado/sobrecargado), detalle de tareas y umbral de sobrecarga (owner). Solo owner, admins y líder del grupo |
 
 ### Permisos (los define el backend)
 
 Los botones se muestran según tu rol, pero el que decide es el backend: si algo no está permitido, aparece su mensaje de error.
 
-- **Owner de la org**: edita/elimina la organización, crea proyectos, nombra group leads.
-- **Owner/Admin**: gestiona grupos, roles de miembros e invitaciones.
-- **Group lead**: agrega miembros al grupo y crea/edita/elimina tareas.
-- **Miembros del grupo**: cambian el estado de las tareas.
+- **Owner de la org**: edita/elimina la organización, crea/edita/elimina grupos y proyectos, cambia roles en la organización (asignar "Owner" transfiere la propiedad), regenera/desactiva la invitación y **asigna el líder de cada grupo**. Puede elegir a cualquier miembro de la organización; si no estaba en el grupo, se suma solo, y el líder anterior pasa a contributor.
+- **Owner/Admin**: ven todos los grupos, ven el código de invitación y pueden quitar miembros de la organización.
+- **Group lead**: agrega miembros al grupo (como contributors), los quita y crea/edita/elimina tareas.
+- **Contributor**: ve y cambia el estado solo de las tareas que tiene asignadas.
+
+> Un grupo nuevo no tiene líder: el owner tiene que asignarlo para que se puedan sumar miembros y crear tareas.
 
 Para probar cada rol, usá los usuarios que crea `POST /api/v1/dev/seed` (`owner`, `admin`, `member`, `grouplead`, `contributor`).
 

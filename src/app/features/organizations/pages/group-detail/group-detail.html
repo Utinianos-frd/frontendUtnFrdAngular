@@ -11,8 +11,14 @@
     <div>
       <h1 class="text-2xl font-semibold m-0">{{ group.name }}</h1>
       <p class="subtext text-sm mt-1 mb-0">{{ projects().length }} proyectos · {{ members().length }} miembros</p>
+      @if (canSeeWorkload()) {
+        <a [routerLink]="['/workload']" [queryParams]="{ org: orgId(), group: groupId() }"
+          class="inline-flex items-center gap-1 text-xs font-semibold mt-2 hover:underline" style="color: var(--accent)">
+          <i class="pi pi-chart-bar"></i> Ver carga de trabajo
+        </a>
+      }
     </div>
-    @if (isOrgAdmin()) {
+    @if (isOrgOwner()) {
       <div class="flex gap-2">
         <button type="button" class="btn btn-ghost" (click)="openDialog('edit-group')"><i class="pi pi-pencil"></i> Editar</button>
         <button type="button" class="btn btn-danger" (click)="deleteGroup()"><i class="pi pi-trash"></i> Eliminar</button>
@@ -58,52 +64,101 @@
       </div>
     </section>
 
-    <!-- Miembros del grupo -->
-    <section class="card p-5 self-start">
-      <div class="section-label subtext mb-3">Miembros del grupo</div>
+    <div class="flex flex-col gap-3 self-start">
+      <!-- Líder del grupo -->
+      <section class="tile p-5" [class]="lead() ? 'bg-[#AA00FF]' : 'bg-[#F0A30A]'">
+        <div class="section-label mb-3">Líder del grupo</div>
 
-      @if (canManageMembers()) {
-        <div class="flex gap-2 mb-3">
-          <p-select class="flex-1" [options]="addableUsers()" optionLabel="label" optionValue="value" size="small"
-            placeholder="Agregar miembro de la organización…" [ngModel]="userToAdd()" (ngModelChange)="userToAdd.set($event)"
-            [emptyMessage]="'Todos los miembros ya están en el grupo'" appendTo="body" />
-          <button type="button" class="btn btn-primary flex-none" [disabled]="userToAdd() == null" (click)="addMember()">
-            <i class="pi pi-user-plus"></i>
-          </button>
-        </div>
-      }
-
-      <div class="flex flex-col">
-        @for (m of members(); track m.user_id) {
-          <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span class="w-7 h-7 bg-[#00ABA9] text-white flex items-center justify-center text-[10px] font-bold flex-none">
-                {{ m.username.slice(0, 2).toUpperCase() }}
-              </span>
-              <span class="text-sm truncate">
-                {{ m.username }}
-                @if (m.user_id === currentUserId()) { <span class="subtext">(vos)</span> }
-              </span>
-            </div>
-
-            @if (canManageMembers() && m.user_id !== currentUserId()) {
-              <div class="flex items-center gap-1">
-                <p-select [options]="roleOptions" optionLabel="label" optionValue="value" size="small"
-                  [ngModel]="m.role" (ngModelChange)="changeRole(m, $event)" appendTo="body" />
-                <button type="button" class="icon-btn danger" title="Quitar del grupo" (click)="removeMember(m)">
-                  <i class="pi pi-user-minus"></i>
-                </button>
+        @if (lead(); as lead) {
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-black/20 flex items-center justify-center text-sm font-bold flex-none">
+              {{ lead.username.slice(0, 2).toUpperCase() }}
+            </span>
+            <div class="min-w-0">
+              <div class="text-base font-bold truncate">
+                {{ lead.username }}
+                @if (lead.user_id === currentUserId()) { <span class="text-white/75 font-normal">(vos)</span> }
               </div>
-            } @else {
-              <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
-                [class]="m.role === 'group_lead' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">{{ roleLabels[m.role] }}</span>
-            }
+              <div class="text-xs text-white/80">Gestiona los miembros y las tareas del grupo</div>
+            </div>
           </div>
-        } @empty {
-          <p class="subtext text-sm m-0">El grupo no tiene miembros.</p>
+        } @else {
+          <p class="text-sm m-0">
+            <i class="pi pi-exclamation-triangle mr-1"></i>
+            Este grupo no tiene líder. Sin líder nadie puede agregar miembros ni crear tareas.
+          </p>
         }
-      </div>
-    </section>
+
+        @if (isOrgOwner()) {
+          <div class="flex gap-2 mt-4">
+            <p-select class="flex-1 min-w-0" [options]="leadCandidates()" optionLabel="label" optionValue="value" size="small"
+              [filter]="true" filterBy="label" [placeholder]="lead() ? 'Cambiar líder…' : 'Elegir líder…'"
+              [ngModel]="leadCandidate()" (ngModelChange)="leadCandidate.set($event)" appendTo="body" />
+            <button type="button" class="btn bg-white text-[#6C3CE9] hover:brightness-95 flex-none"
+              [disabled]="leadCandidate() == null || assigningLead()" (click)="assignLead()">
+              @if (assigningLead()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-star"></i> }
+              Asignar
+            </button>
+          </div>
+          <p class="text-[11px] text-white/80 mt-2 mb-0">
+            Podés elegir cualquier miembro de la organización; si no está en el grupo, se suma automáticamente.
+          </p>
+        }
+      </section>
+
+      <!-- Miembros del grupo -->
+      <section class="card p-5">
+        <div class="section-label subtext mb-3">Miembros del grupo</div>
+
+        @if (isGroupLead()) {
+          <div class="flex gap-2 mb-3">
+            <p-select class="flex-1 min-w-0" [options]="addableUsers()" optionLabel="label" optionValue="value" size="small"
+              placeholder="Agregar miembro de la organización…" [ngModel]="userToAdd()" (ngModelChange)="userToAdd.set($event)"
+              [emptyMessage]="'Todos los miembros ya están en el grupo'" appendTo="body" />
+            <button type="button" class="btn btn-primary flex-none" [disabled]="userToAdd() == null" (click)="addMember()"
+              title="Agregar como contributor">
+              <i class="pi pi-user-plus"></i>
+            </button>
+          </div>
+        }
+
+        <div class="flex flex-col">
+          @for (m of members(); track m.user_id) {
+            <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-7 h-7 text-white flex items-center justify-center text-[10px] font-bold flex-none"
+                  [class]="m.role === 'group_lead' ? 'bg-[#AA00FF]' : 'bg-[#00ABA9]'">
+                  {{ m.username.slice(0, 2).toUpperCase() }}
+                </span>
+                <span class="text-sm truncate">
+                  {{ m.username }}
+                  @if (m.user_id === currentUserId()) { <span class="subtext">(vos)</span> }
+                </span>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
+                  [class]="m.role === 'group_lead' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">{{ roleLabels[m.role] }}</span>
+                @if (m.role !== 'group_lead') {
+                  @if (isOrgOwner()) {
+                    <button type="button" class="icon-btn" title="Hacer líder del grupo" (click)="assignLead(m.user_id)">
+                      <i class="pi pi-star"></i>
+                    </button>
+                  }
+                  @if (isGroupLead()) {
+                    <button type="button" class="icon-btn danger" title="Quitar del grupo" (click)="removeMember(m)">
+                      <i class="pi pi-user-minus"></i>
+                    </button>
+                  }
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="subtext text-sm m-0">El grupo no tiene miembros.</p>
+          }
+        </div>
+      </section>
+    </div>
   </div>
 } @else {
   <div class="card p-10 text-center">

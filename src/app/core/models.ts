@@ -1,12 +1,15 @@
 export type OrgRole = 'owner' | 'admin' | 'member';
 export type GroupRole = 'group_lead' | 'contributor';
 export type TaskStatus = 'pending' | 'in_progress' | 'done';
+export type WorkloadStatus = 'available' | 'busy' | 'overloaded';
 
 export interface Organization {
     id: string;
     name: string;
     plan: string;
     plan_status: string;
+    /** Cantidad de tareas activas a partir de la cual alguien se considera sobrecargado. */
+    overload_threshold: number;
     /** Rol del usuario logueado en esta organización. */
     role: OrgRole;
 }
@@ -50,6 +53,40 @@ export interface Task {
     project_id: number;
     assignee_ids: number[];
 }
+
+/** Carga de un miembro del grupo. Las tareas activas se suman en todos sus grupos. */
+export interface MemberWorkload {
+    id: string;
+    user_id: number;
+    username: string;
+    group_role: GroupRole;
+    active_task_count: number;
+    status: WorkloadStatus;
+}
+
+export interface ActiveTask {
+    task_id: number;
+    title: string;
+    status: TaskStatus;
+    project_id: number;
+    group_id: number;
+}
+
+export interface MemberWorkloadDetail extends Omit<MemberWorkload, 'group_role'> {
+    active_tasks: ActiveTask[];
+}
+
+export const WORKLOAD_STATUS_LABELS: Record<WorkloadStatus, string> = {
+    available: 'Disponible',
+    busy: 'Ocupado',
+    overloaded: 'Sobrecargado',
+};
+
+export const WORKLOAD_STATUS_COLORS: Record<WorkloadStatus, string> = {
+    available: '#008A00',
+    busy: '#F0A30A',
+    overloaded: '#A20025',
+};
 
 export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
     owner: 'Owner',

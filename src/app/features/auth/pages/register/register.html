@@ -1,0 +1,71 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Encabezado -->
+  <div class="text-center">
+    <img src="assets/img/tasker_logo.png" alt="Tasker logo" class="h-28 mx-auto mb-3 -rotate-12" />
+    <h2 class="text-3xl font-bold text-gray-900 mb-1">Crear cuenta</h2>
+    <p class="text-gray-500 text-sm">Completá tus datos para empezar a usar Tasker</p>
+  </div>
+
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Usuario -->
+    <div class="flex flex-col gap-1">
+      <label for="reg-username" class="text-sm font-medium text-gray-700">Usuario</label>
+      <input pInputText id="reg-username" type="text" autocomplete="username" placeholder="usuario"
+        class="w-full" formControlName="username" />
+      @if (showError('username')) {
+        <small class="text-red-500">Elegí un nombre de usuario</small>
+      } @else if (serverErrors().username) {
+        <small class="text-red-500">{{ serverErrors().username }}</small>
+      }
+    </div>
+
+    <!-- Email -->
+    <div class="flex flex-col gap-1">
+      <label for="reg-email" class="text-sm font-medium text-gray-700">Correo electrónico</label>
+      <input pInputText id="reg-email" type="email" autocomplete="email" placeholder="usuario@utn.edu.ar"
+        class="w-full" formControlName="email" />
+      @if (showError('email')) {
+        <small class="text-red-500">Ingresá un email válido</small>
+      } @else if (serverErrors().email) {
+        <small class="text-red-500">{{ serverErrors().email }}</small>
+      }
+    </div>
+
+    <!-- Contraseña -->
+    <div class="flex flex-col gap-1">
+      <label for="reg-password" class="text-sm font-medium text-gray-700">Contraseña</label>
+      <p-password inputId="reg-password" placeholder="Mínimo 8 caracteres" [feedback]="false" [toggleMask]="true"
+        autocomplete="new-password" styleClass="w-full" inputStyleClass="w-full" formControlName="password" />
+      @if (showError('password')) {
+        <small class="text-red-500">La contraseña debe tener al menos 8 caracteres</small>
+      } @else if (serverErrors().password) {
+        <small class="text-red-500">{{ serverErrors().password }}</small>
+      }
+    </div>
+
+    <!-- Confirmación -->
+    <div class="flex flex-col gap-1">
+      <label for="reg-confirm" class="text-sm font-medium text-gray-700">Repetir contraseña</label>
+      <p-password inputId="reg-confirm" placeholder="••••••••" [feedback]="false" [toggleMask]="true"
+        autocomplete="new-password" styleClass="w-full" inputStyleClass="w-full" formControlName="confirm" />
+      @if (showError('confirm')) {
+        <small class="text-red-500">Repetí la contraseña</small>
+      } @else if (form.hasError('mismatch') && form.controls.confirm.touched) {
+        <small class="text-red-500">Las contraseñas no coinciden</small>
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-red-600 text-center m-0">{{ errorMessage() }}</p>
+    }
+
+    <p-button label="Crear cuenta" type="submit" [loading]="loading()" styleClass="w-full" size="large" />
+
+    <p class="text-center text-sm text-gray-500 m-0">
+      ¿Ya tenés cuenta?
+      <a routerLink="/auth/login" class="font-medium" style="color: #7c3aed;">Iniciá sesión</a>
+    </p>
+  </form>
+</div>

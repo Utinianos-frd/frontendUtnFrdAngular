@@ -1,13 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PRIMENG_MODULES } from '../../../../shared/primeng/primeng';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [PRIMENG_MODULES, ReactiveFormsModule],
+  imports: [PRIMENG_MODULES, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styles: ``,
 })

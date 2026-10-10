@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
@@ -30,7 +31,7 @@ interface TaskForm {
 
 @Component({
   selector: 'app-project-board',
-  imports: [RouterLink, FormsModule, DialogModule, InputText, SelectModule, MultiSelectModule, NameDialog],
+  imports: [RouterLink, FormsModule, DragDropModule, DialogModule, InputText, SelectModule, MultiSelectModule, NameDialog],
   templateUrl: './project-board.html',
 })
 export class ProjectBoard implements OnInit {
@@ -72,6 +73,12 @@ export class ProjectBoard implements OnInit {
     this.members().some(m => m.user_id === this.currentUserId() && m.role === 'group_lead')
   );
   isGroupMember = computed(() => this.members().some(m => m.user_id === this.currentUserId()));
+
+  /** El group lead mueve cualquier tarea; un contributor, solo las que tiene asignadas. */
+  canChangeStatus(task: Task): boolean {
+    const me = this.currentUserId();
+    return this.isGroupLead() || (me != null && task.assignee_ids.includes(me));
+  }
 
   memberOptions = computed(() => this.members().map(m => ({ value: m.user_id, label: m.username })));
   private usernames = computed(() => new Map(this.members().map(m => [m.user_id, m.username])));
@@ -178,6 +185,12 @@ export class ProjectBoard implements OnInit {
         this.feedback.error(err);
       },
     });
+  }
+
+  /** Soltar una tarjeta en otra columna cambia el estado de la tarea. */
+  onDrop(event: CdkDragDrop<TaskStatus, TaskStatus, Task>): void {
+    if (event.previousContainer === event.container) return;
+    this.changeStatus(event.item.data, event.container.data);
   }
 
   deleteTask(task: Task): void {

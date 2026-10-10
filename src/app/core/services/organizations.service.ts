@@ -19,8 +19,8 @@ export class OrganizationsService {
         return this.api.create<Organization>('organizations/', 'organizations', { name });
     }
 
-    update(orgId: string, name: string): Observable<Organization> {
-        return this.api.update<Organization>(`organizations/${orgId}`, 'organizations', { name });
+    update(orgId: string, changes: Partial<Pick<Organization, 'name' | 'overload_threshold'>>): Observable<Organization> {
+        return this.api.update<Organization>(`organizations/${orgId}`, 'organizations', changes);
     }
 
     delete(orgId: string): Observable<void> {

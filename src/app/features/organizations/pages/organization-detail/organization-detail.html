@@ -26,7 +26,7 @@
     <section class="tile bg-[#0050EF] p-5 self-start">
       <div class="flex items-center justify-between mb-3">
         <span class="section-label">Grupos</span>
-        @if (isAdmin()) {
+        @if (isOwner()) {
           <button type="button" class="btn bg-white text-[#6C3CE9] hover:brightness-95" (click)="openDialog('create-group')">
             <i class="pi pi-plus"></i> Crear grupo
           </button>
@@ -39,7 +39,7 @@
             <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="flex-1 min-w-0 text-sm font-semibold truncate hover:underline">
               {{ group.name }}
             </a>
-            @if (isAdmin()) {
+            @if (isOwner()) {
               <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Editar" (click)="openDialog('edit-group', group)">
                 <i class="pi pi-pencil"></i>
               </button>
@@ -72,20 +72,22 @@
                 </span>
               </div>
 
-              @if (isAdmin() && m.role !== 'owner' && m.user_id !== currentUserId()) {
-                <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1">
+                @if (isOwner() && m.role !== 'owner') {
                   <p-select [options]="roleOptions" optionLabel="label" optionValue="value" size="small"
                     [ngModel]="m.role" (ngModelChange)="changeRole(m, $event)" appendTo="body" />
+                } @else {
+                  <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
+                    [class]="m.role === 'owner' ? 'bg-[#D80073]' : m.role === 'admin' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">
+                    {{ roleLabels[m.role] }}
+                  </span>
+                }
+                @if (isAdmin() && m.role !== 'owner' && m.user_id !== currentUserId()) {
                   <button type="button" class="icon-btn danger" title="Quitar de la organización" (click)="removeMember(m)">
                     <i class="pi pi-user-minus"></i>
                   </button>
-                </div>
-              } @else {
-                <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
-                  [class]="m.role === 'owner' ? 'bg-[#D80073]' : m.role === 'admin' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">
-                  {{ roleLabels[m.role] }}
-                </span>
-              }
+                }
+              </div>
             </div>
           }
         </div>
@@ -101,13 +103,17 @@
               <code class="field-input !text-xs truncate">{{ invitation()!.token }}</code>
               <button type="button" class="btn btn-primary flex-none" (click)="copyInvite()"><i class="pi pi-copy"></i> Copiar</button>
             </div>
-            <div class="flex gap-2 mt-3">
-              <button type="button" class="btn btn-ghost" (click)="regenerateInvite()"><i class="pi pi-refresh"></i> Regenerar</button>
-              <button type="button" class="btn btn-ghost" (click)="deactivateInvite()"><i class="pi pi-ban"></i> Desactivar</button>
-            </div>
+            @if (isOwner()) {
+              <div class="flex gap-2 mt-3">
+                <button type="button" class="btn btn-ghost" (click)="regenerateInvite()"><i class="pi pi-refresh"></i> Regenerar</button>
+                <button type="button" class="btn btn-ghost" (click)="deactivateInvite()"><i class="pi pi-ban"></i> Desactivar</button>
+              </div>
+            }
           } @else {
             <p class="subtext text-sm mt-0 mb-3">No hay una invitación activa.</p>
-            <button type="button" class="btn btn-primary" (click)="regenerateInvite()"><i class="pi pi-link"></i> Generar código</button>
+            @if (isOwner()) {
+              <button type="button" class="btn btn-primary" (click)="regenerateInvite()"><i class="pi pi-link"></i> Generar código</button>
+            }
           }
         </section>
       }

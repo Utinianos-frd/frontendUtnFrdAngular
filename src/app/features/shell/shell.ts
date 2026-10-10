@@ -18,6 +18,7 @@ export class Shell implements OnInit {
   readonly tabs = [
     { path: '/home', label: 'Inicio' },
     { path: '/organizations', label: 'Organizaciones' },
+    { path: '/workload', label: 'Workload' },
   ];
 
   dark = signal(localStorage.getItem(THEME_KEY) === 'dark');

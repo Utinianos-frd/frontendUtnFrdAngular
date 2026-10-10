@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, of, switchMap, tap } from 'rxjs';
 import { API_URL } from '../config';
 
 const TOKEN_KEY = 'token';
@@ -31,12 +31,31 @@ export class AuthService {
 
         return this.http.post<any>(`${API_URL}/auth/login`, body).pipe(
             map(res => extractTokens(res)),
-            tap(tokens => {
-                localStorage.setItem(TOKEN_KEY, tokens.access);
-                if (tokens.refresh) localStorage.setItem(REFRESH_KEY, tokens.refresh);
-            }),
+            tap(tokens => this.saveTokens(tokens)),
             map(() => undefined)
         );
+    }
+
+    /** Crea el usuario y deja la sesión iniciada. */
+    register(username: string, email: string, password: string): Observable<void> {
+        const body = { data: { type: 'users', attributes: { username, email, password } } };
+
+        return this.http.post<any>(`${API_URL}/auth/register`, body).pipe(
+            switchMap(res => {
+                // El backend devuelve los tokens al registrar; si no vinieran, iniciamos sesión.
+                try {
+                    this.saveTokens(extractTokens(res));
+                    return of(undefined);
+                } catch {
+                    return this.login(username, password);
+                }
+            })
+        );
+    }
+
+    private saveTokens(tokens: Tokens): void {
+        localStorage.setItem(TOKEN_KEY, tokens.access);
+        if (tokens.refresh) localStorage.setItem(REFRESH_KEY, tokens.refresh);
     }
 
     loadCurrentUser(): Observable<CurrentUser> {

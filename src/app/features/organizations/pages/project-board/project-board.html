@@ -27,11 +27,15 @@
   @if (!isGroupMember()) {
     <div class="card p-3 mb-4 text-sm subtext">
       <i class="pi pi-info-circle mr-1"></i>
-      No sos miembro de este grupo: podés ver el tablero, pero solo los miembros pueden mover tareas y solo el group lead puede crearlas.
+      No sos miembro de este grupo: podés ver el tablero, pero solo el líder del grupo gestiona las tareas.
     </div>
   }
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  @if (isGroupMember()) {
+    <p class="subtext text-xs mt-0 mb-3"><i class="pi pi-arrows-h mr-1"></i>Arrastrá una tarea a otra columna para cambiar su estado.</p>
+  }
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3" cdkDropListGroup>
     @for (col of columns(); track col.status) {
       <div class="flex flex-col gap-2.5">
         <div class="tile px-3 py-2 flex items-center justify-between text-[11px] font-bold uppercase" [style.background]="col.color">
@@ -42,8 +46,12 @@
           }
         </div>
 
+        <!-- Zona donde se sueltan las tareas -->
+        <div class="board-column flex flex-col gap-2.5 min-h-24 p-1 -m-1" cdkDropList [cdkDropListData]="col.status"
+          [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
         @for (task of col.tasks; track task.id) {
-          <div class="card p-3.5 flex flex-col gap-2.5">
+          <div class="card p-3.5 flex flex-col gap-2.5" cdkDrag [cdkDragData]="task"
+            [cdkDragDisabled]="!canChangeStatus(task)" [class.cursor-grab]="canChangeStatus(task)">
             <div class="flex items-start justify-between gap-2">
               <span class="text-sm font-semibold leading-snug" [class.line-through]="task.status === 'done'"
                 [class.subtext]="task.status === 'done'">{{ task.title }}</span>
@@ -63,7 +71,7 @@
                   <span class="text-[11px] subtext">Sin asignar</span>
                 }
               </div>
-              @if (isGroupMember()) {
+              @if (canChangeStatus(task)) {
                 <p-select [options]="statusOptions" optionLabel="label" optionValue="value" size="small"
                   [ngModel]="task.status" (ngModelChange)="changeStatus(task, $event)" appendTo="body" />
               }
@@ -72,6 +80,7 @@
         } @empty {
           <div class="text-xs subtext text-center py-6 border border-dashed divider">Sin tareas</div>
         }
+        </div>
       </div>
     }
   </div>
