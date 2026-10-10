@@ -3,8 +3,8 @@
   <!-- Encabezado -->
   <div class="text-center">
     <img src="assets/img/tasker_logo.png" alt="Tasker logo" class="h-48 mx-auto mb-4 -rotate-12" />
-    <h2 class="text-3xl font-bold text-gray-900 mb-1">Iniciar sesión</h2>
-    <p class="text-gray-500 text-sm">Ingresá tus credenciales para continuar</p>
+    <h2 class="text-3xl font-medium mb-1">Iniciar sesión</h2>
+    <p class="subtext text-sm">Ingresá tus credenciales para continuar</p>
   </div>
 
   <!-- Formulario -->
@@ -12,7 +12,7 @@
 
     <!-- Usuario -->
     <div class="flex flex-col gap-1">
-      <label for="username" class="text-sm font-medium text-gray-700">Usuario</label>
+      <label for="username" class="text-sm font-medium">Usuario</label>
       <input
         pInputText
         id="username"
@@ -28,7 +28,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <label for="password" class="text-sm font-medium text-gray-700">Contraseña</label>
+      <label for="password" class="text-sm font-medium">Contraseña</label>
       <p-password
         inputId="password"
         placeholder="••••••••"
@@ -56,19 +56,19 @@
     />
 
     <div class="text-center">
-      <a href="#" class="text-sm font-medium" style="color: #7c3aed;">¿Olvidaste tu contraseña?</a>
+      <a href="#" class="text-sm font-medium" style="color: var(--accent)">¿Olvidaste tu contraseña?</a>
     </div>
 
-    <p class="text-center text-sm text-gray-500 m-0">
+    <p class="text-center text-sm subtext m-0">
       ¿No tenés cuenta?
-      <a routerLink="/auth/register" class="font-medium" style="color: #7c3aed;">Creá una</a>
+      <a routerLink="/auth/register" class="font-medium" style="color: var(--accent)">Creá una</a>
     </p>
 
   </form>
 
   <!-- Separador -->
   <p-divider>
-    <span class="text-sm text-gray-400 px-2">o continuá con</span>
+    <span class="text-sm subtext px-2">o continuá con</span>
   </p-divider>
 
   <!-- Botón Google -->

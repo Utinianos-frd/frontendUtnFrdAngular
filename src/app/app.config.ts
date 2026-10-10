@@ -8,20 +8,21 @@ import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
-const FuchsiaPreset = definePreset(Aura, {
+// Escala de acento del design system "Nocturne" (ver src/styles.css).
+const NocturnePreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50:  '{violet.50}',
-      100: '{violet.100}',
-      200: '{violet.200}',
-      300: '{violet.300}',
-      400: '{violet.400}',
-      500: '{violet.500}',
-      600: '{violet.600}',
-      700: '{violet.700}',
-      800: '{violet.800}',
-      900: '{violet.900}',
-      950: '{violet.950}',
+      50:  '#f9f9ff',
+      100: '#f5f4ff',
+      200: '#e7e5fe',
+      300: '#d2cefd',
+      400: '#b5abfc',
+      500: '#968ae0',
+      600: '#796cbf',
+      700: '#5d5294',
+      800: '#423a6a',
+      900: '#2b2741',
+      950: '#1b1830',
     },
   },
 });
@@ -33,7 +34,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     providePrimeNG({
       theme: {
-        preset: FuchsiaPreset,
+        preset: NocturnePreset,
         options: {
           darkModeSelector: '.app-dark',
         },

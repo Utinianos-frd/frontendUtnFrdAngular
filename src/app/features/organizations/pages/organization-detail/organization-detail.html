@@ -7,15 +7,25 @@
 } @else if (org(); as org) {
   <!-- Encabezado -->
   <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
-    <div>
-      <h1 class="text-2xl font-semibold m-0">{{ org.name }}</h1>
-      <p class="subtext text-sm mt-1 mb-0">
-        Plan {{ org.plan }} · {{ members().length }} miembros · {{ groups().length }} grupos · Tu rol: {{ roleLabels[org.role] }}
-      </p>
+    <div class="flex items-center gap-4 min-w-0">
+      <div class="w-14 h-14 rounded-[12px] flex items-center justify-center flex-none text-xl font-medium overflow-hidden"
+        style="background: var(--color-accent-900); color: var(--color-accent-300)">
+        @if (org.logo_url) {
+          <img [src]="org.logo_url" [alt]="org.name" class="w-full h-full object-cover" />
+        } @else {
+          {{ org.name.slice(0, 1).toUpperCase() }}
+        }
+      </div>
+      <div class="min-w-0">
+        <h1 class="text-[28px] font-medium m-0 leading-none truncate">{{ org.name }}</h1>
+        <p class="text-muted text-[13px] mt-2 mb-0">
+          Plan {{ org.plan }} · {{ members().length }} miembros · {{ groups().length }} grupos · Tu rol: {{ roleLabels[org.role] }}
+        </p>
+      </div>
     </div>
     @if (isOwner()) {
       <div class="flex gap-2">
-        <button type="button" class="btn btn-ghost" (click)="openDialog('edit-org')"><i class="pi pi-pencil"></i> Editar</button>
+        <button type="button" class="btn btn-secondary" (click)="openDialog('edit-org')"><i class="pi pi-pencil"></i> Editar</button>
         <button type="button" class="btn btn-danger" (click)="deleteOrg()"><i class="pi pi-trash"></i> Eliminar</button>
       </div>
     }
@@ -23,11 +33,11 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-3">
     <!-- Grupos -->
-    <section class="tile bg-[#0050EF] p-5 self-start">
+    <section class="card p-5 self-start">
       <div class="flex items-center justify-between mb-3">
-        <span class="section-label">Grupos</span>
+        <span class="card-kicker">Grupos</span>
         @if (isOwner()) {
-          <button type="button" class="btn bg-white text-[#6C3CE9] hover:brightness-95" (click)="openDialog('create-group')">
+          <button type="button" class="btn btn-link text-xs" (click)="openDialog('create-group')">
             <i class="pi pi-plus"></i> Crear grupo
           </button>
         }
@@ -35,22 +45,28 @@
 
       <div class="flex flex-col gap-2">
         @for (group of groups(); track group.id) {
-          <div class="flex items-center justify-between gap-2 p-3 bg-black/20">
-            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="flex-1 min-w-0 text-sm font-semibold truncate hover:underline">
+          <div class="flex items-center gap-3 p-3 rounded-[8px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
+            <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
+              style="background: var(--color-accent-900); color: var(--color-accent-300)">
+              <i class="pi pi-users text-base"></i>
+            </div>
+            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="flex-1 min-w-0 text-sm font-medium truncate hover:underline">
               {{ group.name }}
             </a>
             @if (isOwner()) {
-              <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Editar" (click)="openDialog('edit-group', group)">
-                <i class="pi pi-pencil"></i>
+              <button type="button" class="icon-btn" title="Editar" (click)="openDialog('edit-group', group)">
+                <i class="pi pi-pencil text-xs"></i>
               </button>
-              <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Eliminar" (click)="deleteGroup(group)">
-                <i class="pi pi-trash"></i>
+              <button type="button" class="icon-btn danger" title="Eliminar" (click)="deleteGroup(group)">
+                <i class="pi pi-trash text-xs"></i>
               </button>
             }
-            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="text-xs font-bold">Ver →</a>
+            <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="icon-btn" title="Ver grupo">
+              <i class="pi pi-chevron-right text-xs"></i>
+            </a>
           </div>
         } @empty {
-          <p class="text-sm text-white/80 m-0">Esta organización todavía no tiene grupos.</p>
+          <p class="text-sm text-muted m-0">Esta organización todavía no tiene grupos.</p>
         }
       </div>
     </section>
@@ -58,12 +74,13 @@
     <div class="flex flex-col gap-3">
       <!-- Miembros -->
       <section class="card p-5">
-        <div class="section-label subtext mb-3">Miembros</div>
+        <div class="card-kicker mb-3">Miembros</div>
         <div class="flex flex-col">
           @for (m of members(); track m.user_id) {
             <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
               <div class="flex items-center gap-2.5 min-w-0">
-                <span class="w-7 h-7 bg-[#0050EF] text-white flex items-center justify-center text-[10px] font-bold flex-none">
+                <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
+                  style="background: var(--color-neutral-800); color: var(--color-neutral-100)">
                   {{ m.username.slice(0, 2).toUpperCase() }}
                 </span>
                 <span class="text-sm truncate">
@@ -77,8 +94,7 @@
                   <p-select [options]="roleOptions" optionLabel="label" optionValue="value" size="small"
                     [ngModel]="m.role" (ngModelChange)="changeRole(m, $event)" appendTo="body" />
                 } @else {
-                  <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
-                    [class]="m.role === 'owner' ? 'bg-[#D80073]' : m.role === 'admin' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">
+                  <span class="tag" [class]="m.role === 'owner' ? 'tag-accent' : m.role === 'admin' ? 'tag-outline' : 'tag-neutral'">
                     {{ roleLabels[m.role] }}
                   </span>
                 }
@@ -96,7 +112,7 @@
       <!-- Invitación -->
       @if (isAdmin()) {
         <section class="card p-5">
-          <div class="section-label subtext mb-3">Invitación</div>
+          <div class="card-kicker mb-3">Invitación</div>
           @if (invitation()?.active) {
             <p class="subtext text-sm mt-0 mb-2">Compartí este código para que otras personas se unan a la organización.</p>
             <div class="flex gap-2">
@@ -126,5 +142,9 @@
   </div>
 }
 
-<app-name-dialog [visible]="dialogOpen()" (visibleChange)="onDialogVisibleChange($event)" [header]="dialogHeader()"
-  [initialValue]="dialogInitial()" [saving]="saving()" (save)="onDialogSave($event)" />
+<app-org-dialog [visible]="orgDialogOpen()" (visibleChange)="onDialogVisibleChange($event)"
+  header="Editar organización" [initialName]="org()?.name ?? ''" [initialLogoUrl]="org()?.logo_url ?? ''"
+  [saving]="saving()" (save)="onOrgSave($event)" />
+
+<app-name-dialog [visible]="groupDialogOpen()" (visibleChange)="onDialogVisibleChange($event)" [header]="dialogHeader()"
+  [initialValue]="dialogInitial()" [saving]="saving()" (save)="onGroupSave($event)" />

@@ -1,15 +1,19 @@
-<div class="min-h-screen flex items-center justify-center relative overflow-hidden px-4 pt-10 pb-16 bg-gradient-to-b from-violet-200 via-gray-50 to-gray-50">
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden px-4 pt-10 pb-16"
+  style="background: radial-gradient(60rem 40rem at 50% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%), var(--bg); color: var(--text); font-family: var(--font-body)">
 
   <!-- Blobs decorativos -->
-  <div class="absolute top-0 left-0 w-72 h-72 bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-  <div class="absolute bottom-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+  <div class="absolute top-0 left-0 w-72 h-72 rounded-full filter blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+    style="background: var(--color-accent-400)"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full filter blur-3xl opacity-30 translate-x-1/3 translate-y-1/3 pointer-events-none"
+    style="background: var(--color-accent-600)"></div>
 
-  <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 relative">
+  <div class="w-full max-w-xl p-8 relative rounded-[14px]"
+    style="background: var(--card-bg); box-shadow: var(--card-shadow)">
     <router-outlet />
   </div>
 
   <!-- Copyright -->
-  <p class="absolute bottom-4 text-sm text-gray-400 select-none">
+  <p class="absolute bottom-4 text-sm subtext select-none">
     &copy; {{ currentYear }} Tasker. Todos los derechos reservados.
   </p>
 

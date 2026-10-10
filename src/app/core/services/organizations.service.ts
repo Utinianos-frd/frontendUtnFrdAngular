@@ -15,11 +15,11 @@ export class OrganizationsService {
         return this.api.get<Organization>(`organizations/${orgId}`);
     }
 
-    create(name: string): Observable<Organization> {
-        return this.api.create<Organization>('organizations/', 'organizations', { name });
+    create(name: string, logoUrl = ''): Observable<Organization> {
+        return this.api.create<Organization>('organizations/', 'organizations', { name, logo_url: logoUrl });
     }
 
-    update(orgId: string, changes: Partial<Pick<Organization, 'name' | 'overload_threshold'>>): Observable<Organization> {
+    update(orgId: string, changes: Partial<Pick<Organization, 'name' | 'overload_threshold' | 'logo_url'>>): Observable<Organization> {
         return this.api.update<Organization>(`organizations/${orgId}`, 'organizations', changes);
     }
 

@@ -1,10 +1,8 @@
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../core/services/auth.service';
-
-const THEME_KEY = 'theme';
 
 /** Layout de las pantallas privadas: barra superior + contenido de la ruta. */
 @Component({
@@ -16,30 +14,21 @@ export class Shell implements OnInit {
   private authService = inject(AuthService);
 
   readonly tabs = [
-    { path: '/home', label: 'Inicio' },
-    { path: '/organizations', label: 'Organizaciones' },
-    { path: '/workload', label: 'Workload' },
+    { path: '/home', label: 'Inicio', icon: 'pi-th-large' },
+    { path: '/organizations', label: 'Organizaciones', icon: 'pi-building' },
+    { path: '/workload', label: 'Workload', icon: 'pi-chart-bar' },
   ];
 
-  dark = signal(localStorage.getItem(THEME_KEY) === 'dark');
   username = computed(() => this.authService.currentUser()?.username ?? '');
   initials = computed(() => this.username().slice(0, 2).toUpperCase() || '?');
 
-  constructor() {
-    effect(() => {
-      document.documentElement.classList.toggle('app-dark', this.dark());
-      localStorage.setItem(THEME_KEY, this.dark() ? 'dark' : 'light');
-    });
-    // Al salir de las pantallas privadas (logout), el login vuelve al tema claro.
-    inject(DestroyRef).onDestroy(() => document.documentElement.classList.remove('app-dark'));
-  }
+  /** Fecha de hoy en español, p. ej. "Vie 10 oct". */
+  readonly todayLabel = new Intl.DateTimeFormat('es-AR', {
+    weekday: 'short', day: 'numeric', month: 'short',
+  }).format(new Date()).replace('.', '');
 
   ngOnInit(): void {
     this.authService.loadCurrentUser().subscribe({ error: () => {} });
-  }
-
-  toggleTheme(): void {
-    this.dark.update(d => !d);
   }
 
   logout(): void {

@@ -2,38 +2,103 @@
 
 @import 'tailwindcss';
 @import 'primeicons/primeicons.css';
+/* La fuente Inter se carga desde index.html (<link> a Google Fonts). */
 
-/* Tema de la app. El modo oscuro se activa con la clase .app-dark en <html>
-   (la misma que usa PrimeNG, ver darkModeSelector en app.config.ts). */
+/* ============================================================
+   Design system "Nocturne" — tokens base
+   Escalas de color, radios, sombras, espaciado y tipografía.
+   Las variables semánticas (--bg, --card-bg, etc.) se derivan
+   de estas más abajo, por modo claro/oscuro.
+   ============================================================ */
 :root {
-  --bg: #ffffff;
-  --nav-bg: #ffffff;
-  --card-bg: #ffffff;
-  --text: #1c1c24;
-  --subtext: rgba(28, 28, 36, 0.55);
-  --divider: rgba(28, 28, 36, 0.08);
-  --chip-bg: rgba(28, 28, 36, 0.06);
-  --toggle-bg: #e2e0ea;
-  --knob-bg: #ffffff;
-  --card-shadow: 0 6px 18px rgba(28, 28, 36, 0.1);
-  --tile-shadow: 0 10px 22px rgba(28, 28, 36, 0.22);
-  --nav-shadow: 0 8px 24px rgba(28, 28, 36, 0.25);
-  --accent: #6c3ce9;
+  /* Morado de acento */
+  --color-accent: #9184d9;
+  --color-accent-100: #f5f4ff;
+  --color-accent-200: #e7e5fe;
+  --color-accent-300: #d2cefd;
+  --color-accent-400: #b5abfc;
+  --color-accent-500: #968ae0;
+  --color-accent-600: #796cbf;
+  --color-accent-700: #5d5294;
+  --color-accent-800: #423a6a;
+  --color-accent-900: #2b2741;
+
+  /* Neutros */
+  --color-neutral-100: #f3f5fe;
+  --color-neutral-200: #e4e7f5;
+  --color-neutral-300: #cfd3e5;
+  --color-neutral-400: #b2b6ca;
+  --color-neutral-500: #9397ab;
+  --color-neutral-600: #75798c;
+  --color-neutral-700: #595d6c;
+  --color-neutral-800: #3f424d;
+  --color-neutral-900: #292b31;
+
+  /* Superficies de marca (Nocturne) */
+  --color-bg: #161826;
+  --color-surface: #232532;
+  --color-section: #262a60;
+  --color-section-ghost: #4c5397;
+  --color-section-glow: #353b80;
+  --color-text: #e9e9ed;
+
+  /* Radios */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  /* Espaciado */
+  --space-1: 2.8px;
+  --space-2: 5.6px;
+  --space-3: 8.4px;
+  --space-4: 11.2px;
+  --space-6: 16.8px;
+  --space-8: 22.4px;
+
+  /* Tipografía */
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-heading-weight: 600;
 }
 
-:root.app-dark {
-  --bg: #1b1b1b;
-  --nav-bg: #242424;
-  --card-bg: #2b2b2b;
-  --text: #ffffff;
-  --subtext: rgba(255, 255, 255, 0.55);
-  --divider: rgba(255, 255, 255, 0.1);
-  --chip-bg: rgba(255, 255, 255, 0.12);
-  --toggle-bg: #3a3a3a;
-  --knob-bg: #1b1b1b;
-  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  --tile-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+/* ============================================================
+   Variables semánticas — tema único (Nocturne oscuro).
+   La clase .app-dark se mantiene fija en <html> para que los
+   componentes de PrimeNG usen su tema oscuro (darkModeSelector
+   en app.config.ts).
+   ============================================================ */
+:root {
+  --bg: var(--color-bg);
+  --nav-bg: #1b1d2b;
+  --card-bg: var(--color-surface);
+  --text: var(--color-text);
+  --subtext: var(--color-neutral-500);
+  --divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --chip-bg: rgba(233, 233, 237, 0.08);
+  --card-shadow: 0 0 0 1px #3f424d, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --tile-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
   --nav-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --accent: var(--color-accent);
+  --accent-contrast: #161826;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
 }
 
 .subtext {
@@ -44,6 +109,7 @@
 .tile {
   box-shadow: var(--tile-shadow);
   color: #fff;
+  border-radius: var(--radius-md);
 }
 
 /* Tarjeta neutra que sigue el tema */
@@ -51,6 +117,7 @@
   background: var(--card-bg);
   box-shadow: var(--card-shadow);
   color: var(--text);
+  border-radius: var(--radius-lg);
 }
 
 .divider {
@@ -59,9 +126,10 @@
 
 .chip {
   background: var(--chip-bg);
+  border-radius: 999px;
 }
 
-/* Botones planos, al estilo del diseño */
+/* Botones */
 .btn {
   font-family: inherit;
   font-weight: 600;
@@ -69,7 +137,8 @@
   padding: 8px 14px;
   cursor: pointer;
   border: none;
-  transition: filter 0.15s, background 0.15s;
+  border-radius: var(--radius-md);
+  transition: filter 0.15s, background 0.15s, box-shadow 0.15s;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -82,12 +151,12 @@
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
-  filter: brightness(1.12);
+  filter: brightness(1.08);
 }
 
 .btn-ghost {
@@ -98,6 +167,33 @@
 
 .btn-ghost:hover:not(:disabled) {
   background: var(--chip-bg);
+}
+
+/* Botón secundario de Nocturne: borde neutro, se tiñe al pasar el cursor. */
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--divider);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.btn-secondary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+}
+
+/* Botón-enlace: solo texto de acento, sin fondo ni borde. */
+.btn-link {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  padding-inline: 4px;
+}
+
+.btn-link:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .btn-danger {
@@ -116,9 +212,11 @@
   align-items: center;
   justify-content: center;
   border: none;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--subtext);
   cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
 
 .icon-btn:hover {
@@ -143,14 +241,23 @@
   font-size: 14px;
   padding: 9px 12px;
   border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 /* Drag & drop del tablero de tareas (Angular CDK) */
 .cdk-drag-preview {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
   opacity: 0.95;
+  border-radius: var(--radius-lg);
 }
 
 .cdk-drag-placeholder {
@@ -175,4 +282,82 @@
 
 .cursor-grab:active {
   cursor: grabbing;
+}
+
+/* ============================================================
+   Componentes de Nocturne reutilizables en las pantallas
+   ============================================================ */
+
+/* Etiqueta en mayúsculas, color de acento (encabeza cada card). */
+.card-kicker {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Texto atenuado (secundario) que respeta el tema. */
+.text-muted {
+  color: color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+/* Chips / etiquetas de estado. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+
+.tag-accent {
+  background: var(--color-accent-800);
+  color: var(--color-accent-100);
+}
+
+.tag-neutral {
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-100);
+}
+
+.tag-outline {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+/* Campos de formulario con etiqueta. */
+.field > label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+/* Tablas (p. ej. Carga de trabajo). */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--subtext);
+  font-weight: 700;
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.table td {
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
 }

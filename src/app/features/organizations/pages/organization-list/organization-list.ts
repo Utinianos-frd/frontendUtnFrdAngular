@@ -4,13 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { Organization, ORG_ROLE_LABELS } from '../../../../core/models';
 import { OrganizationsService } from '../../../../core/services/organizations.service';
 import { Feedback } from '../../../../shared/ui/feedback';
-import { NameDialog } from '../../../../shared/ui/name-dialog';
-
-const TILE_COLORS = ['#0050EF', '#008A00', '#AA00FF', '#D80073', '#00ABA9', '#F0A30A'];
+import { OrgDialog, OrgDialogResult } from '../../../../shared/ui/org-dialog';
 
 @Component({
   selector: 'app-organization-list',
-  imports: [RouterLink, FormsModule, NameDialog],
+  imports: [RouterLink, FormsModule, OrgDialog],
   templateUrl: './organization-list.html',
 })
 export class OrganizationList implements OnInit {
@@ -45,13 +43,9 @@ export class OrganizationList implements OnInit {
     });
   }
 
-  color(index: number): string {
-    return TILE_COLORS[index % TILE_COLORS.length];
-  }
-
-  create(name: string): void {
+  create({ name, logoUrl }: OrgDialogResult): void {
     this.creating.set(true);
-    this.orgs.create(name).subscribe({
+    this.orgs.create(name, logoUrl).subscribe({
       next: org => {
         this.creating.set(false);
         this.dialogOpen.set(false);

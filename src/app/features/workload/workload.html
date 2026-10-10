@@ -1,9 +1,9 @@
 <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
   <div>
-    <h1 class="text-2xl font-semibold m-0">Carga de trabajo</h1>
-    <p class="subtext text-sm mt-1 mb-0">
+    <h1 class="text-[28px] font-medium m-0 leading-none">Carga de trabajo</h1>
+    <p class="text-muted text-[13px] mt-2 mb-0">
       Tareas activas (sin completar) de cada miembro, sumando todos sus grupos.
-      @if (threshold()) { Se considera sobrecarga a partir de {{ threshold() }} tareas. }
+      @if (threshold()) { Sobrecarga a partir de {{ threshold() }} tareas activas. }
     </p>
   </div>
 
@@ -31,21 +31,34 @@
 } @else {
   <!-- Resumen -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-    <div class="tile bg-[#0050EF] p-4">
-      <div class="text-3xl font-extrabold">{{ summary().total }}</div>
-      <div class="text-[11px] font-bold uppercase">Miembros · {{ summary().tasks }} tareas activas</div>
+    <div class="card p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full flex-none" style="background: var(--accent)"></span>
+        <span class="section-label subtext">Miembros</span>
+      </div>
+      <div class="text-[32px] font-medium leading-none">{{ summary().total }}</div>
+      <div class="text-xs text-muted">{{ summary().tasks }} tareas activas</div>
     </div>
-    <div class="tile p-4" [style.background]="statusColors.available">
-      <div class="text-3xl font-extrabold">{{ summary().available }}</div>
-      <div class="text-[11px] font-bold uppercase">{{ statusLabels.available }}</div>
+    <div class="card p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full flex-none" [style.background]="statusColors.available"></span>
+        <span class="section-label subtext">{{ statusLabels.available }}</span>
+      </div>
+      <div class="text-[32px] font-medium leading-none">{{ summary().available }}</div>
     </div>
-    <div class="tile p-4" [style.background]="statusColors.busy">
-      <div class="text-3xl font-extrabold">{{ summary().busy }}</div>
-      <div class="text-[11px] font-bold uppercase">{{ statusLabels.busy }}</div>
+    <div class="card p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full flex-none" [style.background]="statusColors.busy"></span>
+        <span class="section-label subtext">{{ statusLabels.busy }}</span>
+      </div>
+      <div class="text-[32px] font-medium leading-none">{{ summary().busy }}</div>
     </div>
-    <div class="tile p-4" [style.background]="statusColors.overloaded">
-      <div class="text-3xl font-extrabold">{{ summary().overloaded }}</div>
-      <div class="text-[11px] font-bold uppercase">{{ statusLabels.overloaded }}</div>
+    <div class="card p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full flex-none" [style.background]="statusColors.overloaded"></span>
+        <span class="section-label subtext">{{ statusLabels.overloaded }}</span>
+      </div>
+      <div class="text-[32px] font-medium leading-none">{{ summary().overloaded }}</div>
     </div>
   </div>
 
@@ -61,19 +74,21 @@
       } @else {
         @for (m of sortedMembers(); track m.user_id) {
           <button type="button" (click)="toggle(m)"
-            class="w-full text-left grid grid-cols-[2fr_1fr_1fr_1.6fr_1fr_32px] gap-3 items-center px-5 py-3.5 border-t divider text-sm cursor-pointer hover:bg-black/5"
+            class="w-full text-left grid grid-cols-[2fr_1fr_1fr_1.6fr_1fr_32px] gap-3 items-center px-5 py-3.5 border-t divider text-sm cursor-pointer transition-colors hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)]"
             style="color: var(--text)">
             <span class="flex items-center gap-2.5 min-w-0">
-              <span class="w-7 h-7 text-white flex items-center justify-center text-[11px] font-bold flex-none"
-                [style.background]="statusColors[m.status]">{{ m.username.slice(0, 2).toUpperCase() }}</span>
+              <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
+                style="background: var(--color-neutral-800); color: var(--color-neutral-100)">{{ m.username.slice(0, 2).toUpperCase() }}</span>
               <span class="truncate">{{ m.username }}</span>
             </span>
             <span class="text-xs subtext">{{ roleLabels[m.group_role] }}</span>
             <span>{{ m.active_task_count }}</span>
-            <span class="h-2 chip overflow-hidden" [title]="m.active_task_count + ' de ' + threshold() + ' tareas'">
-              <span class="block h-full transition-all" [style.width.%]="loadPct(m)" [style.background]="statusColors[m.status]"></span>
+            <span class="h-1.5 rounded-full overflow-hidden" style="background: var(--color-neutral-800)"
+              [title]="m.active_task_count + ' de ' + threshold() + ' tareas'">
+              <span class="block h-full rounded-full transition-all" [style.width.%]="loadPct(m)" [style.background]="statusColors[m.status]"></span>
             </span>
-            <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white w-fit" [style.background]="statusColors[m.status]">
+            <span class="tag w-fit" [style.background]="'color-mix(in srgb, ' + statusColors[m.status] + ' 18%, transparent)'"
+              [style.color]="statusColors[m.status]">
               {{ statusLabels[m.status] }}
             </span>
             <i class="pi subtext text-xs" [class]="expandedUserId() === m.user_id ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
@@ -81,7 +96,7 @@
 
           <!-- Detalle: tareas activas del miembro -->
           @if (expandedUserId() === m.user_id) {
-            <div class="px-5 pb-4 pt-1 chip">
+            <div class="px-5 pb-4 pt-1" style="background: color-mix(in srgb, var(--text) 4%, transparent)">
               @if (loadingDetail()) {
                 <div class="subtext text-sm py-3"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando tareas…</div>
               } @else if (detail(); as d) {
@@ -91,8 +106,7 @@
                       <div class="flex flex-wrap items-center justify-between gap-2 py-2 border-b divider last:border-b-0 text-sm">
                         <span class="font-medium">{{ t.title }}</span>
                         <span class="flex items-center gap-3">
-                          <span class="text-[10px] font-bold uppercase px-2 py-0.5 text-white"
-                            [class]="t.status === 'in_progress' ? 'bg-[#00ABA9]' : 'bg-[#0050EF]'">{{ taskStatusLabels[t.status] }}</span>
+                          <span class="tag" [class]="t.status === 'in_progress' ? 'tag-accent' : 'tag-neutral'">{{ taskStatusLabels[t.status] }}</span>
                           <a class="text-xs font-semibold hover:underline" style="color: var(--accent)"
                             [routerLink]="['/organizations', org(), 'groups', t.group_id, 'projects', t.project_id]">
                             {{ projectName(t) }} →

@@ -25,15 +25,23 @@ export class Home {
   ];
 
   readonly activity = [
-    { text: 'Diego Paz completó "Diseñar wireframes de onboarding"', time: 'Hace 12 min' },
-    { text: 'Se desbloqueó la tarea "Prototipo interactivo"', time: 'Hace 12 min' },
-    { text: 'Sol Aguirre se unió al grupo Infraestructura', time: 'Hace 1 h' },
-    { text: 'Nueva dependencia agregada en "Migración API"', time: 'Hace 3 h' },
+    { icon: 'pi-check', text: 'Diego Paz completó "Diseñar wireframes de onboarding"', time: 'Hace 12 min' },
+    { icon: 'pi-lock-open', text: 'Se desbloqueó la tarea "Prototipo interactivo"', time: 'Hace 12 min' },
+    { icon: 'pi-user-plus', text: 'Sol Aguirre se unió al grupo Infraestructura', time: 'Hace 1 h' },
+    { icon: 'pi-sitemap', text: 'Nueva dependencia agregada en "Migración API"', time: 'Hace 3 h' },
   ];
 
+  // barHeight/barColor son solo para el mini-gráfico de ejemplo del dashboard.
   readonly workloadMini = [
-    { initials: 'MR', status: 'Disponible' },
-    { initials: 'DP', status: 'Sobrecargado' },
-    { initials: 'SA', status: 'Ocupado' },
+    { initials: 'MR', status: 'Disponible', barHeight: '22px', barColor: '#3fb950' },
+    { initials: 'DP', status: 'Sobrecargado', barHeight: '58px', barColor: '#f85149' },
+    { initials: 'SA', status: 'Ocupado', barHeight: '40px', barColor: '#d29922' },
   ];
+
+  /** Color de severidad para la etiqueta de carga de cada grupo. */
+  loadColor(load: string): string {
+    if (load === 'Alta') return '#f85149';
+    if (load === 'Media') return '#d29922';
+    return '#3fb950';
+  }
 }

@@ -9,12 +9,13 @@ import { GroupsService } from '../../../../core/services/groups.service';
 import { OrganizationsService } from '../../../../core/services/organizations.service';
 import { Feedback } from '../../../../shared/ui/feedback';
 import { NameDialog } from '../../../../shared/ui/name-dialog';
+import { OrgDialog, OrgDialogResult } from '../../../../shared/ui/org-dialog';
 
 type DialogMode = 'edit-org' | 'create-group' | 'edit-group' | null;
 
 @Component({
   selector: 'app-organization-detail',
-  imports: [RouterLink, FormsModule, SelectModule, NameDialog],
+  imports: [RouterLink, FormsModule, SelectModule, NameDialog, OrgDialog],
   templateUrl: './organization-detail.html',
 })
 export class OrganizationDetail implements OnInit {
@@ -44,22 +45,11 @@ export class OrganizationDetail implements OnInit {
   isAdmin = computed(() => this.org()?.role === 'owner' || this.org()?.role === 'admin');
   currentUserId = computed(() => this.auth.currentUser()?.id);
 
-  dialogOpen = computed(() => this.dialogMode() !== null);
-  dialogHeader = computed(() => {
-    switch (this.dialogMode()) {
-      case 'edit-org': return 'Editar organización';
-      case 'create-group': return 'Nuevo grupo';
-      case 'edit-group': return 'Editar grupo';
-      default: return '';
-    }
-  });
-  dialogInitial = computed(() => {
-    switch (this.dialogMode()) {
-      case 'edit-org': return this.org()?.name ?? '';
-      case 'edit-group': return this.editingGroup()?.name ?? '';
-      default: return '';
-    }
-  });
+  // El diálogo de organización (nombre + logo) y el de grupos (solo nombre) son distintos.
+  orgDialogOpen = computed(() => this.dialogMode() === 'edit-org');
+  groupDialogOpen = computed(() => this.dialogMode() === 'create-group' || this.dialogMode() === 'edit-group');
+  dialogHeader = computed(() => (this.dialogMode() === 'create-group' ? 'Nuevo grupo' : 'Editar grupo'));
+  dialogInitial = computed(() => (this.dialogMode() === 'edit-group' ? this.editingGroup()?.name ?? '' : ''));
 
   ngOnInit(): void {
     this.orgsService.get(this.orgId()).subscribe({
@@ -109,13 +99,30 @@ export class OrganizationDetail implements OnInit {
     if (!visible) this.dialogMode.set(null);
   }
 
-  onDialogSave(name: string): void {
+  /** Guardar edición de la organización (nombre + logo). */
+  onOrgSave({ name, logoUrl }: OrgDialogResult): void {
+    this.saving.set(true);
+    this.orgsService.update(this.orgId(), { name, logo_url: logoUrl }).subscribe({
+      next: org => {
+        this.saving.set(false);
+        this.dialogMode.set(null);
+        this.org.set(org);
+        this.feedback.success('Organización actualizada');
+      },
+      error: err => {
+        this.saving.set(false);
+        this.feedback.error(err);
+      },
+    });
+  }
+
+  /** Guardar creación/edición de un grupo (solo nombre). */
+  onGroupSave(name: string): void {
     const orgId = this.orgId();
     const mode = this.dialogMode();
     const group = this.editingGroup();
 
-    const request: Observable<Organization | Group> =
-      mode === 'edit-org' ? this.orgsService.update(orgId, { name }) :
+    const request: Observable<Group> =
       mode === 'create-group' ? this.groupsService.create(orgId, name) :
       this.groupsService.update(orgId, group!.id, name);
 
@@ -124,10 +131,7 @@ export class OrganizationDetail implements OnInit {
       next: result => {
         this.saving.set(false);
         this.dialogMode.set(null);
-        if (mode === 'edit-org') {
-          this.org.set(result as Organization);
-          this.feedback.success('Organización actualizada');
-        } else if (mode === 'create-group') {
+        if (mode === 'create-group') {
           // Un grupo nuevo no tiene líder: vamos a su página para asignarlo.
           this.feedback.success('Grupo creado. Ahora asignale un líder.');
           this.router.navigate(['/organizations', orgId, 'groups', result.id]);

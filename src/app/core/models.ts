@@ -6,6 +6,8 @@ export type WorkloadStatus = 'available' | 'busy' | 'overloaded';
 export interface Organization {
     id: string;
     name: string;
+    /** URL del logo de la organización (vacío si no tiene). */
+    logo_url: string;
     plan: string;
     plan_status: string;
     /** Cantidad de tareas activas a partir de la cual alguien se considera sobrecargado. */
@@ -82,10 +84,11 @@ export const WORKLOAD_STATUS_LABELS: Record<WorkloadStatus, string> = {
     overloaded: 'Sobrecargado',
 };
 
+// Tonos de severidad legibles sobre las superficies oscuras de Nocturne.
 export const WORKLOAD_STATUS_COLORS: Record<WorkloadStatus, string> = {
-    available: '#008A00',
-    busy: '#F0A30A',
-    overloaded: '#A20025',
+    available: '#3fb950',
+    busy: '#d29922',
+    overloaded: '#f85149',
 };
 
 export const ORG_ROLE_LABELS: Record<OrgRole, string> = {

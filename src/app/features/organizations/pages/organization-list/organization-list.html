@@ -1,7 +1,7 @@
 <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
   <div>
-    <h1 class="text-2xl font-semibold m-0">Mis organizaciones</h1>
-    <p class="subtext text-sm mt-1 mb-0">Elegí una organización para ver sus grupos, proyectos y miembros.</p>
+    <h1 class="text-[28px] font-medium m-0 leading-none">Mis organizaciones</h1>
+    <p class="text-muted text-[13px] mt-2 mb-0">Elegí una organización para ver sus grupos, proyectos y miembros.</p>
   </div>
   <button type="button" class="btn btn-primary" (click)="dialogOpen.set(true)">
     <i class="pi pi-plus"></i> Nueva organización
@@ -19,15 +19,25 @@
 } @else {
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
     @for (org of organizations(); track org.id; let i = $index) {
-      <a [routerLink]="['/organizations', org.id]" class="tile p-5 flex flex-col gap-6 min-h-[140px] hover:brightness-110 transition"
-        [style.background]="color(i)">
+      <a [routerLink]="['/organizations', org.id]"
+        class="card p-5 flex flex-col gap-6 min-h-[140px] transition hover:-translate-y-0.5">
         <div class="flex items-start justify-between gap-2">
-          <span class="text-lg font-bold leading-tight">{{ org.name }}</span>
-          <i class="pi pi-arrow-right"></i>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-[10px] flex items-center justify-center flex-none text-base font-medium overflow-hidden"
+              style="background: var(--color-accent-900); color: var(--color-accent-300)">
+              @if (org.logo_url) {
+                <img [src]="org.logo_url" [alt]="org.name" class="w-full h-full object-cover" />
+              } @else {
+                {{ org.name.slice(0, 1).toUpperCase() }}
+              }
+            </div>
+            <span class="text-lg font-medium leading-tight truncate">{{ org.name }}</span>
+          </div>
+          <i class="pi pi-arrow-right subtext"></i>
         </div>
-        <div class="mt-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide">
-          <span class="bg-black/20 px-2 py-1">{{ roleLabels[org.role] }}</span>
-          <span class="bg-black/20 px-2 py-1">Plan {{ org.plan }}</span>
+        <div class="mt-auto flex items-center gap-2">
+          <span class="tag tag-outline">{{ roleLabels[org.role] }}</span>
+          <span class="tag tag-neutral">Plan {{ org.plan }}</span>
         </div>
       </a>
     }
@@ -36,7 +46,7 @@
 
 <!-- Unirse con invitación -->
 <section class="card p-5 mt-6 max-w-xl">
-  <div class="section-label subtext mb-2">Unirme con una invitación</div>
+  <div class="card-kicker mb-2">Unirme con una invitación</div>
   <form class="flex gap-2" (ngSubmit)="join()">
     <input class="field-input" name="token" [ngModel]="joinToken()" (ngModelChange)="joinToken.set($event)"
       placeholder="Pegá el código o link de invitación" autocomplete="off" />
@@ -44,5 +54,4 @@
   </form>
 </section>
 
-<app-name-dialog [(visible)]="dialogOpen" header="Nueva organización" placeholder="Ej: NORTE Studio"
-  [saving]="creating()" (save)="create($event)" />
+<app-org-dialog [(visible)]="dialogOpen" header="Nueva organización" [saving]="creating()" (save)="create($event)" />

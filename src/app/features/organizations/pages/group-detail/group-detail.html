@@ -9,8 +9,8 @@
   <!-- Encabezado -->
   <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
     <div>
-      <h1 class="text-2xl font-semibold m-0">{{ group.name }}</h1>
-      <p class="subtext text-sm mt-1 mb-0">{{ projects().length }} proyectos · {{ members().length }} miembros</p>
+      <h1 class="text-[28px] font-medium m-0 leading-none">{{ group.name }}</h1>
+      <p class="text-muted text-[13px] mt-2 mb-0">{{ projects().length }} proyectos · {{ members().length }} miembros</p>
       @if (canSeeWorkload()) {
         <a [routerLink]="['/workload']" [queryParams]="{ org: orgId(), group: groupId() }"
           class="inline-flex items-center gap-1 text-xs font-semibold mt-2 hover:underline" style="color: var(--accent)">
@@ -20,7 +20,7 @@
     </div>
     @if (isOrgOwner()) {
       <div class="flex gap-2">
-        <button type="button" class="btn btn-ghost" (click)="openDialog('edit-group')"><i class="pi pi-pencil"></i> Editar</button>
+        <button type="button" class="btn btn-secondary" (click)="openDialog('edit-group')"><i class="pi pi-pencil"></i> Editar</button>
         <button type="button" class="btn btn-danger" (click)="deleteGroup()"><i class="pi pi-trash"></i> Eliminar</button>
       </div>
     }
@@ -30,7 +30,7 @@
     <!-- Proyectos -->
     <section>
       <div class="flex items-center justify-between mb-3">
-        <span class="section-label subtext">Proyectos</span>
+        <span class="card-kicker">Proyectos</span>
         @if (isOrgOwner()) {
           <button type="button" class="btn btn-primary" (click)="openDialog('create-project')">
             <i class="pi pi-plus"></i> Nuevo proyecto
@@ -39,52 +39,59 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        @for (project of projects(); track project.id; let i = $index) {
-          <div class="tile p-4 flex flex-col gap-4 min-h-[120px]" [style.background]="color(i)">
+        @for (project of projects(); track project.id) {
+          <div class="card p-4 flex flex-col gap-4 min-h-[120px]">
             <div class="flex items-start justify-between gap-2">
-              <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', project.id]"
-                class="text-base font-bold leading-tight hover:underline">{{ project.name }}</a>
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
+                  style="background: var(--color-accent-900); color: var(--color-accent-300)">
+                  <i class="pi pi-folder text-base"></i>
+                </div>
+                <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', project.id]"
+                  class="text-base font-medium leading-tight hover:underline truncate">{{ project.name }}</a>
+              </div>
               @if (isOrgOwner()) {
-                <div class="flex flex-none">
-                  <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Editar" (click)="openDialog('edit-project', project)">
-                    <i class="pi pi-pencil"></i>
+                <div class="flex flex-none -mr-1 -mt-1">
+                  <button type="button" class="icon-btn" title="Editar" (click)="openDialog('edit-project', project)">
+                    <i class="pi pi-pencil text-xs"></i>
                   </button>
-                  <button type="button" class="icon-btn !text-white/80 hover:!bg-black/20" title="Eliminar" (click)="deleteProject(project)">
-                    <i class="pi pi-trash"></i>
+                  <button type="button" class="icon-btn danger" title="Eliminar" (click)="deleteProject(project)">
+                    <i class="pi pi-trash text-xs"></i>
                   </button>
                 </div>
               }
             </div>
             <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', project.id]"
-              class="mt-auto text-[11px] font-bold uppercase tracking-wide">Ver tablero →</a>
+              class="mt-auto text-xs font-semibold" style="color: var(--accent)">Ver tablero →</a>
           </div>
         } @empty {
-          <div class="card p-6 text-sm subtext sm:col-span-2">Este grupo todavía no tiene proyectos.</div>
+          <div class="card p-6 text-sm text-muted sm:col-span-2">Este grupo todavía no tiene proyectos.</div>
         }
       </div>
     </section>
 
     <div class="flex flex-col gap-3 self-start">
       <!-- Líder del grupo -->
-      <section class="tile p-5" [class]="lead() ? 'bg-[#AA00FF]' : 'bg-[#F0A30A]'">
-        <div class="section-label mb-3">Líder del grupo</div>
+      <section class="card p-5">
+        <div class="card-kicker mb-3">Líder del grupo</div>
 
         @if (lead(); as lead) {
           <div class="flex items-center gap-3">
-            <span class="w-10 h-10 bg-black/20 flex items-center justify-center text-sm font-bold flex-none">
+            <span class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-none"
+              style="background: var(--color-accent-900); color: var(--color-accent-300)">
               {{ lead.username.slice(0, 2).toUpperCase() }}
             </span>
             <div class="min-w-0">
-              <div class="text-base font-bold truncate">
+              <div class="text-base font-medium truncate">
                 {{ lead.username }}
-                @if (lead.user_id === currentUserId()) { <span class="text-white/75 font-normal">(vos)</span> }
+                @if (lead.user_id === currentUserId()) { <span class="subtext font-normal">(vos)</span> }
               </div>
-              <div class="text-xs text-white/80">Gestiona los miembros y las tareas del grupo</div>
+              <div class="text-xs text-muted">Gestiona los miembros y las tareas del grupo</div>
             </div>
           </div>
         } @else {
-          <p class="text-sm m-0">
-            <i class="pi pi-exclamation-triangle mr-1"></i>
+          <p class="text-sm m-0 text-muted">
+            <i class="pi pi-exclamation-triangle mr-1" style="color: #d29922"></i>
             Este grupo no tiene líder. Sin líder nadie puede agregar miembros ni crear tareas.
           </p>
         }
@@ -94,13 +101,13 @@
             <p-select class="flex-1 min-w-0" [options]="leadCandidates()" optionLabel="label" optionValue="value" size="small"
               [filter]="true" filterBy="label" [placeholder]="lead() ? 'Cambiar líder…' : 'Elegir líder…'"
               [ngModel]="leadCandidate()" (ngModelChange)="leadCandidate.set($event)" appendTo="body" />
-            <button type="button" class="btn bg-white text-[#6C3CE9] hover:brightness-95 flex-none"
+            <button type="button" class="btn btn-primary flex-none"
               [disabled]="leadCandidate() == null || assigningLead()" (click)="assignLead()">
               @if (assigningLead()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-star"></i> }
               Asignar
             </button>
           </div>
-          <p class="text-[11px] text-white/80 mt-2 mb-0">
+          <p class="text-[11px] text-muted mt-2 mb-0">
             Podés elegir cualquier miembro de la organización; si no está en el grupo, se suma automáticamente.
           </p>
         }
@@ -108,7 +115,7 @@
 
       <!-- Miembros del grupo -->
       <section class="card p-5">
-        <div class="section-label subtext mb-3">Miembros del grupo</div>
+        <div class="card-kicker mb-3">Miembros del grupo</div>
 
         @if (isGroupLead()) {
           <div class="flex gap-2 mb-3">
@@ -126,8 +133,9 @@
           @for (m of members(); track m.user_id) {
             <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
               <div class="flex items-center gap-2.5 min-w-0">
-                <span class="w-7 h-7 text-white flex items-center justify-center text-[10px] font-bold flex-none"
-                  [class]="m.role === 'group_lead' ? 'bg-[#AA00FF]' : 'bg-[#00ABA9]'">
+                <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
+                  [style.background]="m.role === 'group_lead' ? 'var(--color-accent-900)' : 'var(--color-neutral-800)'"
+                  [style.color]="m.role === 'group_lead' ? 'var(--color-accent-300)' : 'var(--color-neutral-100)'">
                   {{ m.username.slice(0, 2).toUpperCase() }}
                 </span>
                 <span class="text-sm truncate">
@@ -137,8 +145,7 @@
               </div>
 
               <div class="flex items-center gap-1">
-                <span class="text-[10px] font-bold uppercase px-2.5 py-1 text-white"
-                  [class]="m.role === 'group_lead' ? 'bg-[#AA00FF]' : 'bg-[#647687]'">{{ roleLabels[m.role] }}</span>
+                <span class="tag" [class]="m.role === 'group_lead' ? 'tag-accent' : 'tag-neutral'">{{ roleLabels[m.role] }}</span>
                 @if (m.role !== 'group_lead') {
                   @if (isOrgOwner()) {
                     <button type="button" class="icon-btn" title="Hacer líder del grupo" (click)="assignLead(m.user_id)">

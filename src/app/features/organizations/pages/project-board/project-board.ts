@@ -17,10 +17,11 @@ import { TaskPath, TasksService } from '../../../../core/services/tasks.service'
 import { Feedback } from '../../../../shared/ui/feedback';
 import { NameDialog } from '../../../../shared/ui/name-dialog';
 
+// El color es el "punto" de la columna, al estilo del mockup Nocturne.
 const COLUMNS: { status: TaskStatus; color: string }[] = [
-  { status: 'pending', color: '#0050EF' },
-  { status: 'in_progress', color: '#00ABA9' },
-  { status: 'done', color: '#008A00' },
+  { status: 'pending', color: 'var(--color-neutral-500)' },
+  { status: 'in_progress', color: 'var(--color-accent)' },
+  { status: 'done', color: 'var(--color-neutral-700)' },
 ];
 
 interface TaskForm {
