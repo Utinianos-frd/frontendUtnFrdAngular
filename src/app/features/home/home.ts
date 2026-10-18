@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FocusSessionService } from '../../core/services/focus-session.service';
+import { Feedback } from '../../shared/ui/feedback';
 
 interface Group {
   name: string;
@@ -38,10 +40,25 @@ export class Home {
     { initials: 'SA', status: 'Ocupado', barHeight: '40px', barColor: '#d29922' },
   ];
 
+  private focus = inject(FocusSessionService);
+  private router = inject(Router);
+  private feedback = inject(Feedback);
+
   /** Color de severidad para la etiqueta de carga de cada grupo. */
   loadColor(load: string): string {
     if (load === 'Alta') return '#f85149';
     if (load === 'Media') return '#d29922';
     return '#3fb950';
+  }
+
+  /** El botón flotante retoma la sesión activa; si no hay, orienta a iniciarla. */
+  openFocus(): void {
+    this.focus.loadActive().subscribe(session => {
+      if (session) {
+        this.router.navigate(['/focus']);
+      } else {
+        this.feedback.info('Iniciá el Modo Foco desde el tablero de un proyecto, eligiendo tus tareas.');
+      }
+    });
   }
 }

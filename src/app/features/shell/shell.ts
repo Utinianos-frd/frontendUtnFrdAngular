@@ -1,8 +1,9 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../core/services/auth.service';
+import { FocusSessionService } from '../../core/services/focus-session.service';
 
 /** Layout de las pantallas privadas: barra superior + contenido de la ruta. */
 @Component({
@@ -12,6 +13,8 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Shell implements OnInit {
   private authService = inject(AuthService);
+  private focus = inject(FocusSessionService);
+  private router = inject(Router);
 
   readonly tabs = [
     { path: '/home', label: 'Inicio', icon: 'pi-th-large' },
@@ -29,6 +32,10 @@ export class Shell implements OnInit {
 
   ngOnInit(): void {
     this.authService.loadCurrentUser().subscribe({ error: () => {} });
+    // Si hay una sesión de Modo Foco activa (p. ej. tras recargar), volvemos a ella.
+    this.focus.loadActive().subscribe(session => {
+      if (session) this.router.navigate(['/focus']);
+    });
   }
 
   logout(): void {

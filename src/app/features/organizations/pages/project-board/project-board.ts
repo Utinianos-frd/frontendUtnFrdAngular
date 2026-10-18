@@ -7,9 +7,10 @@ import { InputText } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import {
-  Group, GroupMember, Organization, Project, Task, TaskStatus, TASK_STATUS_LABELS,
+  Comment, Group, GroupMember, Organization, Project, Task, TaskStatus, TASK_STATUS_LABELS,
 } from '../../../../core/models';
 import { AuthService } from '../../../../core/services/auth.service';
+import { FocusSessionService, FocusTaskRef } from '../../../../core/services/focus-session.service';
 import { GroupsService } from '../../../../core/services/groups.service';
 import { OrganizationsService } from '../../../../core/services/organizations.service';
 import { ProjectsService } from '../../../../core/services/projects.service';
@@ -47,6 +48,7 @@ export class ProjectBoard implements OnInit {
   private auth = inject(AuthService);
   private feedback = inject(Feedback);
   private router = inject(Router);
+  private focus = inject(FocusSessionService);
 
   readonly statusLabels = TASK_STATUS_LABELS;
   readonly statusOptions = COLUMNS.map(c => ({ value: c.status, label: TASK_STATUS_LABELS[c.status] }));
@@ -64,9 +66,21 @@ export class ProjectBoard implements OnInit {
   form = signal<TaskForm>({ title: '', status: 'pending', assignee_ids: [] });
   savingTask = signal(false);
 
+  // Comentarios de la tarea en edición
+  comments = signal<Comment[]>([]);
+  loadingComments = signal(false);
+  newComment = signal('');
+  postingComment = signal(false);
+
   // Diálogo de nombre del proyecto
   projectDialogOpen = signal(false);
   savingProject = signal(false);
+
+  // Modo Foco
+  focusDialogOpen = signal(false);
+  focusGoal = signal('');
+  focusTaskIds = signal<number[]>([]);
+  startingFocus = signal(false);
 
   currentUserId = computed(() => this.auth.currentUser()?.id);
   isOrgOwner = computed(() => this.org()?.role === 'owner');
@@ -74,6 +88,14 @@ export class ProjectBoard implements OnInit {
     this.members().some(m => m.user_id === this.currentUserId() && m.role === 'group_lead')
   );
   isGroupMember = computed(() => this.members().some(m => m.user_id === this.currentUserId()));
+
+  // Modo Foco: solo si la org es Pro y el usuario tiene tareas asignadas en este proyecto.
+  myTasks = computed(() => {
+    const me = this.currentUserId();
+    return me == null ? [] : this.tasks().filter(t => t.assignee_ids.includes(me));
+  });
+  canFocus = computed(() => this.org()?.plan === 'pro' && this.myTasks().length > 0);
+  myTaskOptions = computed(() => this.myTasks().map(t => ({ value: Number(t.id), label: t.title })));
 
   /** El group lead mueve cualquier tarea; un contributor, solo las que tiene asignadas. */
   canChangeStatus(task: Task): boolean {
@@ -137,6 +159,10 @@ export class ProjectBoard implements OnInit {
         ? { title: task.title, status: task.status, assignee_ids: [...task.assignee_ids] }
         : { title: '', status, assignee_ids: [] }
     );
+    // Los comentarios solo existen para una tarea ya creada.
+    this.comments.set([]);
+    this.newComment.set('');
+    if (task) this.loadComments(task);
     this.taskDialogOpen.set(true);
   }
 
@@ -203,6 +229,93 @@ export class ProjectBoard implements OnInit {
         },
         error: err => this.feedback.error(err),
       });
+    });
+  }
+
+  // Comentarios
+
+  private loadComments(task: Task): void {
+    this.loadingComments.set(true);
+    this.tasksService.listComments(this.path, task.id).subscribe({
+      next: comments => {
+        this.comments.set(comments);
+        this.loadingComments.set(false);
+      },
+      error: () => this.loadingComments.set(false),
+    });
+  }
+
+  postComment(): void {
+    const task = this.editingTask();
+    const text = this.newComment().trim();
+    if (!task || !text) return;
+
+    this.postingComment.set(true);
+    this.tasksService.addComment(this.path, task.id, text).subscribe({
+      next: comment => {
+        this.comments.update(list => [...list, comment]);
+        this.newComment.set('');
+        this.postingComment.set(false);
+      },
+      error: err => {
+        this.postingComment.set(false);
+        this.feedback.error(err);
+      },
+    });
+  }
+
+  commentDate(iso: string): string {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('es-AR', {
+      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    }).format(d);
+  }
+
+  commentInitials(username: string): string {
+    return (username.slice(0, 2) || '?').toUpperCase();
+  }
+
+  // Modo Foco
+
+  openFocusDialog(): void {
+    this.focusGoal.set('');
+    this.focusTaskIds.set([]);
+    this.focusDialogOpen.set(true);
+  }
+
+  startFocus(): void {
+    const goal = this.focusGoal().trim();
+    const ids = this.focusTaskIds();
+    if (!goal || !ids.length) return;
+
+    const refs: FocusTaskRef[] = ids.map(id => {
+      const task = this.myTasks().find(t => Number(t.id) === id);
+      return {
+        id,
+        title: task?.title ?? `Tarea #${id}`,
+        orgId: this.orgId(),
+        groupId: this.groupId(),
+        projectId: this.projectId(),
+      };
+    });
+
+    this.startingFocus.set(true);
+    this.focus.start(goal, refs).subscribe({
+      next: () => {
+        this.startingFocus.set(false);
+        this.focusDialogOpen.set(false);
+        this.router.navigate(['/focus']);
+      },
+      error: err => {
+        this.startingFocus.set(false);
+        // 409: ya hay una sesión activa → ir a la sesión en curso en vez de reintentar.
+        if (err?.status === 409) {
+          this.focusDialogOpen.set(false);
+          this.router.navigate(['/focus']);
+          return;
+        }
+        this.feedback.error(err);
+      },
     });
   }
 

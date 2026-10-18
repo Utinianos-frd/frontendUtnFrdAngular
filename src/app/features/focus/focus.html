@@ -1,0 +1,146 @@
+<div class="min-h-screen flex flex-col"
+  style="background: radial-gradient(900px 600px at 50% -5%, color-mix(in srgb, var(--color-accent-800) 55%, transparent), transparent 70%), var(--bg); color: var(--text); font-family: var(--font-body)">
+
+  <!-- Barra superior -->
+  <header class="flex items-center justify-between gap-4 px-5 md:px-8 py-4">
+    <div class="flex items-center gap-2 min-w-0">
+      <i class="pi pi-stopwatch" style="color: var(--color-accent-300)"></i>
+      <span class="card-kicker">Modo foco</span>
+    </div>
+    <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="endSession()">
+      <i class="pi pi-sign-out"></i> Terminar sesión
+    </button>
+  </header>
+
+  @if (session(); as session) {
+    <main class="flex-1 flex flex-col lg:flex-row gap-6 px-5 md:px-8 pb-10 w-full max-w-6xl mx-auto">
+
+      <!-- Timer -->
+      <section class="flex-1 flex flex-col items-center justify-center gap-6 text-center">
+        <div>
+          <div class="text-xs subtext uppercase tracking-wider mb-1">Objetivo de la sesión</div>
+          <h1 class="text-xl md:text-2xl font-medium m-0 max-w-xl">{{ session.goal_text }}</h1>
+          @if (activeRef(); as ref) {
+            <p class="text-sm text-muted mt-2 mb-0">Tarea actual: <span class="font-medium" style="color: var(--text)">{{ ref.title }}</span></p>
+          }
+        </div>
+
+        <!-- Anillo -->
+        <div class="relative" style="width: min(300px, 70vw); height: min(300px, 70vw)">
+          <svg viewBox="0 0 300 300" class="w-full h-full" style="transform: rotate(-90deg)">
+            <circle cx="150" cy="150" r="130" fill="none" stroke="var(--color-neutral-800)" stroke-width="8" />
+            <circle cx="150" cy="150" r="130" fill="none" stroke="var(--color-accent)" stroke-width="8"
+              stroke-linecap="round" [attr.stroke-dasharray]="RING" [attr.stroke-dashoffset]="ringOffset()"
+              style="transition: stroke-dashoffset 0.9s linear; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent) 55%, transparent))" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            @if (pomodoro()) {
+              <span class="text-5xl md:text-6xl font-medium tabular-nums tracking-tight">{{ formatTime(remaining()) }}</span>
+              <span class="text-xs subtext mt-1">{{ paused() ? 'En pausa' : 'Concentrado' }}</span>
+            } @else {
+              <span class="text-2xl font-medium subtext">Listo</span>
+              <span class="text-xs subtext mt-1">Iniciá un pomodoro</span>
+            }
+          </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="flex items-center gap-2 flex-wrap justify-center">
+          @if (!pomodoro()) {
+            <button type="button" class="btn btn-primary" [disabled]="activeTaskId() == null || busy()" (click)="startPomodoro()">
+              <i class="pi pi-play"></i> Iniciar pomodoro
+            </button>
+          } @else {
+            @if (running()) {
+              <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="pausePomodoro()"><i class="pi pi-pause"></i> Pausar</button>
+            } @else if (paused()) {
+              <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="resumePomodoro()"><i class="pi pi-play"></i> Reanudar</button>
+            }
+            <button type="button" class="btn btn-ghost" [disabled]="busy()" (click)="cancelPomodoro()"><i class="pi pi-times"></i> Cancelar</button>
+          }
+        </div>
+      </section>
+
+      <!-- Tareas de la sesión -->
+      <aside class="w-full lg:w-80 flex-none">
+        <div class="card p-5">
+          <div class="card-kicker mb-3">Tareas de la sesión</div>
+          <div class="flex flex-col gap-2">
+            @for (ref of refs(); track ref.id) {
+              <div class="flex items-center gap-2.5 p-3 rounded-[10px] transition-colors"
+                [class.cursor-pointer]="!pomodoro() && !ref.done"
+                [style.background]="ref.id === activeTaskId() ? 'color-mix(in srgb, var(--color-accent) 16%, transparent)' : 'color-mix(in srgb, var(--text) 3%, transparent)'"
+                [style.opacity]="ref.done ? 0.6 : 1"
+                (click)="selectTask(ref)">
+                <i class="pi text-sm flex-none" [class]="ref.done ? 'pi-check-circle' : 'pi-circle'"
+                  [style.color]="ref.done ? '#3fb950' : 'var(--color-neutral-500)'"></i>
+                <span class="text-sm flex-1 min-w-0 truncate" [class.line-through]="ref.done">{{ ref.title }}</span>
+                @if (!ref.done && ref.orgId) {
+                  <button type="button" class="icon-btn !w-7 !h-7 flex-none" title="Marcar completada"
+                    [disabled]="busy()" (click)="completeTask(ref); $event.stopPropagation()">
+                    <i class="pi pi-check text-xs"></i>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          @if (allDone()) {
+            <p class="text-sm mt-3 mb-0" style="color: #3fb950"><i class="pi pi-check-circle mr-1"></i>¡Completaste todas tus tareas!</p>
+          }
+        </div>
+      </aside>
+    </main>
+  }
+
+  <!-- Sugerencia de descanso -->
+  @if (breakMinutes(); as mins) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); backdrop-filter: blur(4px)">
+      <div class="card p-6 text-center max-w-sm w-full flex flex-col items-center gap-3">
+        <i class="pi pi-check-circle text-3xl" style="color: #3fb950"></i>
+        <h2 class="text-lg font-medium m-0">¡Pomodoro completado!</h2>
+        <p class="text-sm text-muted m-0">
+          Llevás {{ consecutive() }} pomodoro(s) seguido(s). Te sugerimos un descanso de
+          <span class="font-medium" style="color: var(--text)">{{ mins }} minutos</span>.
+        </p>
+        <button type="button" class="btn btn-primary mt-1" (click)="dismissBreak()">Entendido</button>
+      </div>
+    </div>
+  }
+
+  <!-- Resumen al terminar -->
+  @if (summary(); as s) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); backdrop-filter: blur(6px)">
+      <div class="card p-7 max-w-md w-full flex flex-col gap-5">
+        <div class="text-center">
+          <span class="card-kicker">Resumen de la sesión</span>
+          <h2 class="text-2xl font-medium m-0 mt-1">¡Buen trabajo!</h2>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="p-3 rounded-[10px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
+            <div class="text-2xl font-medium tabular-nums">{{ formatTime(s.worked_seconds) }}</div>
+            <div class="text-[11px] subtext mt-1">tiempo trabajado</div>
+          </div>
+          <div class="p-3 rounded-[10px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
+            <div class="text-2xl font-medium tabular-nums">{{ s.pomodoros_completed }}</div>
+            <div class="text-[11px] subtext mt-1">pomodoros</div>
+          </div>
+          <div class="p-3 rounded-[10px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
+            <div class="text-2xl font-medium tabular-nums">{{ s.tasks_completed_count }}</div>
+            <div class="text-[11px] subtext mt-1">tareas hechas</div>
+          </div>
+        </div>
+        @if (s.tasks_completed_titles.length) {
+          <div>
+            <div class="card-kicker mb-2">Tareas completadas</div>
+            <div class="flex flex-col gap-1.5">
+              @for (title of s.tasks_completed_titles; track title) {
+                <div class="flex items-center gap-2 text-sm"><i class="pi pi-check" style="color: #3fb950"></i>{{ title }}</div>
+              }
+            </div>
+          </div>
+        }
+        <button type="button" class="btn btn-primary w-full justify-center" (click)="leave()">Volver</button>
+      </div>
+    </div>
+  }
+</div>

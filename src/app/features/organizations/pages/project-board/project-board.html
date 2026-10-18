@@ -17,6 +17,12 @@
       <h1 class="text-[28px] font-medium m-0 leading-none">{{ project.name }}</h1>
     </div>
     <div class="flex gap-2 flex-wrap">
+      <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', projectId(), 'graph']" class="btn btn-secondary">
+        <i class="pi pi-sitemap"></i> Grafo de dependencias
+      </a>
+      @if (canFocus()) {
+        <button type="button" class="btn btn-secondary" (click)="openFocusDialog()"><i class="pi pi-stopwatch"></i> Modo Foco</button>
+      }
       @if (isGroupLead()) {
         <button type="button" class="btn btn-primary" (click)="openTaskDialog()"><i class="pi pi-plus"></i> Nueva tarea</button>
       }
@@ -60,7 +66,12 @@
             style="background: var(--card-bg); box-shadow: var(--card-shadow)"
             [cdkDragDisabled]="!canChangeStatus(task)" [class.cursor-grab]="canChangeStatus(task)">
             <div class="flex items-start justify-between gap-2">
-              <span class="text-sm font-medium leading-snug" [class.line-through]="task.status === 'done'">{{ task.title }}</span>
+              <span class="text-sm font-medium leading-snug flex items-start gap-1.5" [class.line-through]="task.status === 'done'">
+                @if (task.blocked) {
+                  <i class="pi pi-lock text-xs flex-none mt-0.5" style="color: var(--color-accent-300)" title="Bloqueada por otra tarea"></i>
+                }
+                {{ task.title }}
+              </span>
               @if (isGroupLead()) {
                 <div class="flex flex-none -mr-1 -mt-1">
                   <button type="button" class="icon-btn" title="Editar" (click)="openTaskDialog(task)"><i class="pi pi-pencil text-xs"></i></button>
@@ -126,7 +137,73 @@
       </button>
     </div>
   </form>
+
+  <!-- Comentarios (solo para una tarea ya creada) -->
+  @if (editingTask(); as task) {
+    <div class="mt-5 pt-4 border-t divider flex flex-col gap-3">
+      <span class="card-kicker">Comentarios</span>
+
+      @if (loadingComments()) {
+        <div class="subtext text-sm py-2"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+      } @else {
+        <div class="flex flex-col gap-3 max-h-56 overflow-y-auto">
+          @for (c of comments(); track c.id) {
+            <div class="flex gap-2.5">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-medium flex-none"
+                style="background: var(--color-neutral-800); color: var(--color-neutral-100)">{{ commentInitials(c.author_username) }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-sm font-medium truncate">{{ c.author_username }}</span>
+                  <span class="text-[11px] subtext flex-none">{{ commentDate(c.created_at) }}</span>
+                </div>
+                <p class="text-sm m-0 whitespace-pre-wrap break-words">{{ c.text }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p class="subtext text-sm m-0">Todavía no hay comentarios.</p>
+          }
+        </div>
+      }
+
+      @if (canChangeStatus(task)) {
+        <form class="flex gap-2 items-start" (ngSubmit)="postComment()">
+          <textarea name="newComment" rows="1" placeholder="Escribí un comentario…"
+            class="field-input flex-1 resize-none" [ngModel]="newComment()" (ngModelChange)="newComment.set($event)"></textarea>
+          <button type="submit" class="btn btn-primary flex-none" [disabled]="!newComment().trim() || postingComment()">
+            @if (postingComment()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-send"></i> }
+            Comentar
+          </button>
+        </form>
+      }
+    </div>
+  }
 </p-dialog>
 
 <app-name-dialog [(visible)]="projectDialogOpen" header="Renombrar proyecto" [initialValue]="project()?.name ?? ''"
   [saving]="savingProject()" (save)="renameProject($event)" />
+
+<!-- Iniciar Modo Foco -->
+<p-dialog header="Iniciar Modo Foco" [visible]="focusDialogOpen()" (visibleChange)="focusDialogOpen.set($event)"
+  [modal]="true" [style]="{ width: '28rem' }" [draggable]="false">
+  <form (ngSubmit)="startFocus()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="focus-goal" class="text-sm font-medium">¿Qué querés lograr en esta sesión?</label>
+      <input pInputText id="focus-goal" name="goal" autocomplete="off" class="w-full"
+        placeholder="Ej: Terminar el endpoint de login" [ngModel]="focusGoal()" (ngModelChange)="focusGoal.set($event)" />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="focus-tasks" class="text-sm font-medium">Tus tareas para esta sesión</label>
+      <p-multiselect inputId="focus-tasks" name="tasks" [options]="myTaskOptions()" optionLabel="label" optionValue="value"
+        placeholder="Elegí al menos una" display="chip" [ngModel]="focusTaskIds()"
+        (ngModelChange)="focusTaskIds.set($event)" appendTo="body" />
+      <small class="subtext">Solo podés incluir tareas que te estén asignadas.</small>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button type="button" class="btn btn-ghost" (click)="focusDialogOpen.set(false)">Cancelar</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!focusGoal().trim() || !focusTaskIds().length || startingFocus()">
+        @if (startingFocus()) { <i class="pi pi-spin pi-spinner"></i> }
+        Iniciar
+      </button>
+    </div>
+  </form>
+</p-dialog>

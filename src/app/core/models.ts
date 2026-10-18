@@ -54,6 +54,34 @@ export interface Task {
     status: TaskStatus;
     project_id: number;
     assignee_ids: number[];
+    /** true si una dependencia FS la mantiene bloqueada (lo calcula el backend). */
+    blocked?: boolean;
+}
+
+/** FS: finish-to-start · FF: finish-to-finish. */
+export type DependencyType = 'FS' | 'FF';
+
+export const DEPENDENCY_TYPE_LABELS: Record<DependencyType, string> = {
+    FS: 'Fin → Inicio',
+    FF: 'Fin → Fin',
+};
+
+export interface TaskDependency {
+    id: string;
+    blocking_task_id: number;
+    blocking_task_title: string;
+    blocked_task_id: number;
+    blocked_task_title: string;
+    dependency_type: DependencyType;
+}
+
+export interface Comment {
+    id: string;
+    text: string;
+    author_id: number;
+    author_username: string;
+    /** ISO 8601 */
+    created_at: string;
 }
 
 /** Carga de un miembro del grupo. Las tareas activas se suman en todos sus grupos. */
@@ -76,6 +104,37 @@ export interface ActiveTask {
 
 export interface MemberWorkloadDetail extends Omit<MemberWorkload, 'group_role'> {
     active_tasks: ActiveTask[];
+}
+
+// Modo Foco (Pomodoro)
+
+export type FocusSessionStatus = 'active' | 'ended';
+export type PomodoroStatus = 'running' | 'paused' | 'completed' | 'cancelled';
+
+export interface FocusSession {
+    id: string;
+    goal_text: string;
+    status: FocusSessionStatus;
+    task_ids: number[];
+    started_at: string;
+    ended_at: string | null;
+}
+
+export interface Pomodoro {
+    id: string;
+    task_id: number;
+    status: PomodoroStatus;
+    duration_minutes: number;
+    started_at: string;
+    completed_at: string | null;
+}
+
+export interface FocusSessionSummary {
+    id: string;
+    worked_seconds: number;
+    pomodoros_completed: number;
+    tasks_completed_count: number;
+    tasks_completed_titles: string[];
 }
 
 export const WORKLOAD_STATUS_LABELS: Record<WorkloadStatus, string> = {

@@ -12,6 +12,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/not-found/not-found').then(m => m.NotFound)
     },
     {
+        // Modo Foco: pantalla a pantalla completa, fuera del Shell (sin barra de navegación).
+        path: 'focus',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/focus/focus').then(m => m.Focus)
+    },
+    {
         // Pantallas privadas: comparten la barra superior (Shell) y requieren login.
         path: '',
         canActivate: [authGuard],
@@ -40,6 +46,10 @@ export const routes: Routes = [
             {
                 path: 'organizations/:orgId/groups/:groupId/projects/:projectId',
                 loadComponent: () => import('./features/organizations/pages/project-board/project-board').then(m => m.ProjectBoard)
+            },
+            {
+                path: 'organizations/:orgId/groups/:groupId/projects/:projectId/graph',
+                loadComponent: () => import('./features/organizations/pages/dependency-graph/dependency-graph').then(m => m.DependencyGraph)
             },
         ]
     },

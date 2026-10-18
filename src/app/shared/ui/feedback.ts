@@ -16,6 +16,10 @@ export class Feedback {
         this.messages.add({ severity: 'error', summary: 'Error', detail: apiErrorMessage(err), life: 5000 });
     }
 
+    info(detail: string): void {
+        this.messages.add({ severity: 'info', summary: 'Modo Foco', detail, life: 4000 });
+    }
+
     confirm(message: string, onAccept: () => void): void {
         this.confirmation.confirm({
             header: 'Confirmar',

@@ -9,6 +9,12 @@ interface JsonApiResource {
     attributes: Record<string, unknown>;
 }
 
+/** Respuesta que además del recurso trae `meta` (p. ej. el descanso sugerido de un pomodoro). */
+export interface ApiResult<T> {
+    data: T;
+    meta?: Record<string, unknown>;
+}
+
 /** Convierte un recurso JSON:API ({ id, type, attributes }) en un objeto plano { id, ...attributes }. */
 function flatten<T>(resource: JsonApiResource): T {
     return { id: resource.id, ...resource.attributes } as T;
@@ -53,6 +59,20 @@ export class ApiService {
     /** POST sin body, para acciones como "regenerar invitación". Ignora la respuesta. */
     action(path: string): Observable<void> {
         return this.http.post(`${API_URL}/${path}`, null).pipe(map(() => undefined));
+    }
+
+    /** POST sin body que sí devuelve un recurso (p. ej. terminar sesión → resumen). */
+    postData<T>(path: string): Observable<T> {
+        return this.http
+            .post<{ data: JsonApiResource }>(`${API_URL}/${path}`, null)
+            .pipe(map(res => flatten<T>(res.data)));
+    }
+
+    /** PATCH que conserva `meta` además del recurso. */
+    updateMeta<T>(path: string, type: string, attributes: object): Observable<ApiResult<T>> {
+        return this.http
+            .patch<{ data: JsonApiResource; meta?: Record<string, unknown> }>(`${API_URL}/${path}`, { data: { type, attributes } })
+            .pipe(map(res => ({ data: flatten<T>(res.data), meta: res.meta })));
     }
 }
 
