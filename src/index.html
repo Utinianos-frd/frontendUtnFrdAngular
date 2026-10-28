@@ -1,11 +1,23 @@
 <!doctype html>
-<html lang="en" class="app-dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>FrontendAngularUtn</title>
+  <title>Tasker</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" href="assets/img/tasker_logo.png">
+  <script>
+    // Aplica el tema guardado antes de renderizar (evita parpadeo). Oscuro por defecto.
+    (function () {
+      try {
+        if (localStorage.getItem('theme') !== 'light') {
+          document.documentElement.classList.add('app-dark');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('app-dark');
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">

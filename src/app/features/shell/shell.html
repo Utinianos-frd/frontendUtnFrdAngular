@@ -22,6 +22,9 @@
       </nav>
 
       <div class="flex items-center gap-1 flex-none">
+        <button type="button" class="icon-btn rounded-[10px]" [title]="dark() ? 'Modo claro' : 'Modo oscuro'" (click)="toggleTheme()">
+          <i class="pi" [class]="dark() ? 'pi-sun' : 'pi-moon'"></i>
+        </button>
         <button type="button" class="icon-btn rounded-[10px]" title="Buscar"><i class="pi pi-search"></i></button>
         <button type="button" class="icon-btn rounded-[10px] relative" title="Notificaciones">
           <i class="pi pi-bell"></i>

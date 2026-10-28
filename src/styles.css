@@ -62,12 +62,32 @@
 }
 
 /* ============================================================
-   Variables semánticas — tema único (Nocturne oscuro).
-   La clase .app-dark se mantiene fija en <html> para que los
-   componentes de PrimeNG usen su tema oscuro (darkModeSelector
-   en app.config.ts).
+   Variables semánticas — MODO CLARO (Nocturne claro).
    ============================================================ */
 :root {
+  --bg: #f6f7fb;
+  --nav-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text: #1c1c24;
+  --subtext: rgba(28, 28, 36, 0.55);
+  --divider: rgba(28, 28, 36, 0.1);
+  --chip-bg: rgba(145, 132, 217, 0.1);
+  --toggle-bg: #e2e0ea;
+  --knob-bg: #ffffff;
+  --card-shadow: 0 0 0 1px rgba(28, 28, 36, 0.06), 0 6px 18px rgba(28, 28, 36, 0.08);
+  --tile-shadow: 0 10px 22px rgba(28, 28, 36, 0.22);
+  --nav-shadow: 0 8px 24px rgba(28, 28, 36, 0.12);
+  --accent: #6c3ce9;
+  --accent-contrast: #ffffff;
+}
+
+/* ============================================================
+   Variables semánticas — MODO OSCURO (Nocturne puro).
+   Se activa con la clase .app-dark en <html> (la misma que usa
+   PrimeNG, ver darkModeSelector en app.config.ts). Es el tema
+   por defecto: index.html la aplica antes de renderizar.
+   ============================================================ */
+:root.app-dark {
   --bg: var(--color-bg);
   --nav-bg: #1b1d2b;
   --card-bg: var(--color-surface);
@@ -75,6 +95,8 @@
   --subtext: var(--color-neutral-500);
   --divider: color-mix(in srgb, #e9e9ed 16%, transparent);
   --chip-bg: rgba(233, 233, 237, 0.08);
+  --toggle-bg: #3f424d;
+  --knob-bg: #e9e9ed;
   --card-shadow: 0 0 0 1px #3f424d, 0 6px 18px rgba(0, 0, 0, 0.55);
   --tile-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
   --nav-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
