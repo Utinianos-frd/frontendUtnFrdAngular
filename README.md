@@ -74,7 +74,7 @@ src/app/
 │   ├── config.ts       # API_URL
 │   ├── models.ts       # interfaces (Organization, Group, Project, Task…) y etiquetas de roles/estados
 │   ├── guards/         # authGuard: protege rutas si no hay token
-│   ├── interceptors/   # agrega "Authorization: Bearer <token>" a cada request
+│   ├── interceptors/   # agrega "Authorization: Bearer <token>"; ante un 401 renueva el token con el refresh y reintenta
 │   └── services/
 │       ├── api.service.ts            # cliente JSON:API genérico (list/get/create/update/delete)
 │       ├── auth.service.ts           # login, logout, usuario actual

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, Observable, of, switchMap, tap } from 'rxjs';
+import { finalize, map, Observable, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { API_URL } from '../config';
 
 const TOKEN_KEY = 'token';
@@ -25,6 +25,9 @@ export class AuthService {
 
     /** Usuario logueado. Se completa al llamar a loadCurrentUser(). */
     readonly currentUser = signal<CurrentUser | null>(null);
+
+    /** Refresh en curso: si varios requests reciben 401 a la vez, comparten un único refresh. */
+    private refreshInFlight: Observable<string> | null = null;
 
     login(username: string, password: string): Observable<void> {
         const body = { data: { type: 'sessions', attributes: { username, password } } };
@@ -74,6 +77,33 @@ export class AuthService {
 
     getToken(): string | null {
         return localStorage.getItem(TOKEN_KEY);
+    }
+
+    getRefreshToken(): string | null {
+        return localStorage.getItem(REFRESH_KEY);
+    }
+
+    /**
+     * Pide un access token nuevo con el refresh token guardado y lo guarda.
+     * token/refresh es la vista nativa de simplejwt: no usa JSON:API ({ refresh } -> { access }).
+     */
+    refreshAccessToken(): Observable<string> {
+        const refresh = this.getRefreshToken();
+        if (!refresh) {
+            return throwError(() => new Error('No hay refresh token guardado'));
+        }
+
+        if (!this.refreshInFlight) {
+            this.refreshInFlight = this.http
+                .post<{ access: string }>(`${API_URL}/auth/token/refresh`, { refresh })
+                .pipe(
+                    map(res => res.access),
+                    tap(access => localStorage.setItem(TOKEN_KEY, access)),
+                    finalize(() => (this.refreshInFlight = null)),
+                    shareReplay(1)
+                );
+        }
+        return this.refreshInFlight;
     }
 
     isLoggedIn(): boolean {
