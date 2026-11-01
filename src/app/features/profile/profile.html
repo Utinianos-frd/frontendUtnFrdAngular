@@ -1,0 +1,91 @@
+@if (loading()) {
+  <div class="subtext text-sm py-10 text-center"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+} @else {
+  <form (ngSubmit)="save()" class="grid gap-4 lg:grid-cols-[340px_1fr] items-stretch">
+
+    <!-- Columna izquierda: identidad + avatar + cuenta -->
+    <div class="flex flex-col gap-4">
+      <section class="card overflow-hidden">
+        <div class="h-20"
+          style="background: radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--color-accent) 45%, transparent), transparent 60%), linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700))"></div>
+        <div class="px-5 pb-5 -mt-11 flex flex-col items-center text-center">
+          <div class="w-[84px] h-[84px] rounded-full flex items-center justify-center text-2xl font-medium flex-none overflow-hidden"
+            style="background: var(--accent-tile-bg); color: var(--accent-tile-fg); box-shadow: 0 0 0 4px var(--card-bg), var(--card-shadow)">
+            @if (form().avatar_url.trim() && !avatarError()) {
+              <img [src]="form().avatar_url.trim()" alt="Avatar" class="w-full h-full object-cover" (error)="avatarError.set(true)" />
+            } @else {
+              {{ initials() }}
+            }
+          </div>
+          <h1 class="text-lg font-medium m-0 mt-3 leading-tight truncate max-w-full">{{ displayName() }}</h1>
+          <p class="text-muted text-xs m-0 truncate max-w-full">{{ user()?.email }}</p>
+        </div>
+
+        <div class="px-5 pb-5 flex flex-col gap-2">
+          <button type="button" class="btn btn-secondary w-full justify-center" (click)="avatarFieldOpen.set(!avatarFieldOpen())">
+            <i class="pi pi-image"></i> Cambiar avatar
+            <i class="pi text-xs" [class]="avatarFieldOpen() ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+          </button>
+          @if (avatarFieldOpen()) {
+            <div class="flex flex-col gap-1">
+              <label for="pf-avatar" class="text-xs font-medium subtext">URL del avatar</label>
+              <input pInputText id="pf-avatar" name="avatar_url" type="url" autocomplete="off" class="w-full"
+                placeholder="https://…/foto.jpg" [ngModel]="form().avatar_url" (ngModelChange)="update({ avatar_url: $event })" />
+              @if (form().avatar_url.trim() && avatarError()) {
+                <small style="color: #f85149">No se pudo cargar la imagen.</small>
+              } @else {
+                <small class="subtext">Pegá un enlace directo a una imagen.</small>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card p-4 flex-1">
+        <div class="card-kicker mb-2">Cuenta</div>
+        <div class="text-xs subtext">Usuario</div>
+        <div class="text-sm font-medium mb-2">{{ user()?.username }}</div>
+        <div class="text-xs subtext">Correo</div>
+        <div class="text-sm font-medium truncate">{{ user()?.email }}</div>
+      </section>
+    </div>
+
+    <!-- Columna derecha: datos editables -->
+    <section class="card p-5 flex flex-col gap-4">
+      <div class="card-kicker">Datos personales</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label for="pf-first" class="text-sm font-medium">Nombre</label>
+          <input pInputText id="pf-first" name="first_name" autocomplete="given-name" class="w-full"
+            [ngModel]="form().first_name" (ngModelChange)="update({ first_name: $event })" placeholder="Tu nombre" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="pf-last" class="text-sm font-medium">Apellido</label>
+          <input pInputText id="pf-last" name="last_name" autocomplete="family-name" class="w-full"
+            [ngModel]="form().last_name" (ngModelChange)="update({ last_name: $event })" placeholder="Tu apellido" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="pf-age" class="text-sm font-medium">Edad</label>
+          <input type="number" min="0" max="150" id="pf-age" name="age" class="field-input"
+            [ngModel]="form().age" (ngModelChange)="update({ age: $event })" placeholder="Ej: 28" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="pf-phone" class="text-sm font-medium">Teléfono</label>
+          <input pInputText id="pf-phone" name="phone" autocomplete="tel" class="w-full"
+            [ngModel]="form().phone" (ngModelChange)="update({ phone: $event })" placeholder="Ej: +54 11 5555 5555" />
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <label for="pf-bio" class="text-sm font-medium">Bio / cargo</label>
+          <textarea id="pf-bio" name="bio" rows="3" class="field-input resize-none"
+            [ngModel]="form().bio" (ngModelChange)="update({ bio: $event })" placeholder="Contá algo sobre vos o tu rol"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end mt-auto">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <i class="pi pi-spin pi-spinner"></i> }
+          Guardar cambios
+        </button>
+      </div>
+    </section>
+  </form>
+}

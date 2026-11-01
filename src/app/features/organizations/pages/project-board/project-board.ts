@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
@@ -7,7 +7,7 @@ import { InputText } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import {
-  Comment, Group, GroupMember, Organization, Project, Task, TaskStatus, TASK_STATUS_LABELS,
+  Comment, Group, GroupMember, Organization, Project, Task, TaskDependency, TaskStatus, TASK_STATUS_LABELS,
 } from '../../../../core/models';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FocusSessionService, FocusTaskRef } from '../../../../core/services/focus-session.service';
@@ -29,6 +29,15 @@ interface TaskForm {
   title: string;
   status: TaskStatus;
   assignee_ids: number[];
+}
+
+interface BoardColumn {
+  /** undefined en la columna virtual "Bloqueadas" (no es un estado real). */
+  status?: TaskStatus;
+  color: string;
+  label: string;
+  blocked: boolean;
+  tasks: Task[];
 }
 
 @Component({
@@ -57,6 +66,7 @@ export class ProjectBoard implements OnInit {
   group = signal<Group | null>(null);
   project = signal<Project | null>(null);
   tasks = signal<Task[]>([]);
+  dependencies = signal<TaskDependency[]>([]);
   members = signal<GroupMember[]>([]);
   loading = signal(true);
 
@@ -106,12 +116,31 @@ export class ProjectBoard implements OnInit {
   memberOptions = computed(() => this.members().map(m => ({ value: m.user_id, label: m.username })));
   private usernames = computed(() => new Map(this.members().map(m => [m.user_id, m.username])));
 
-  columns = computed(() =>
-    COLUMNS.map(col => {
-      const tasks = this.tasks().filter(t => t.status === col.status);
-      return { ...col, label: TASK_STATUS_LABELS[col.status], tasks };
-    })
-  );
+  /**
+   * Columnas del tablero. Además de los 3 estados reales (pending/in_progress/done)
+   * se muestra una columna virtual "Bloqueadas" con las tareas que tienen una
+   * dependencia FS sin cumplir (task.blocked). Esas se sacan de su columna de estado
+   * y la columna de bloqueadas no es destino de arrastre (no se pueden mover).
+   */
+  columns = computed<BoardColumn[]>(() => {
+    const all = this.tasks();
+    const byStatus = (status: TaskStatus) => ({
+      status,
+      color: COLUMNS.find(c => c.status === status)!.color,
+      label: TASK_STATUS_LABELS[status],
+      blocked: false,
+      tasks: all.filter(t => t.status === status && !t.blocked),
+    });
+    const blockedColumn: BoardColumn = {
+      status: undefined,
+      color: 'var(--color-accent-300)',
+      label: 'Bloqueadas',
+      blocked: true,
+      tasks: all.filter(t => t.blocked),
+    };
+    // Orden: Por hacer · En curso · Bloqueadas · Completada
+    return [byStatus('pending'), byStatus('in_progress'), blockedColumn, byStatus('done')];
+  });
 
   private get path(): TaskPath {
     return { orgId: this.orgId(), groupId: this.groupId(), projectId: this.projectId() };
@@ -140,6 +169,20 @@ export class ProjectBoard implements OnInit {
       next: tasks => this.tasks.set(tasks),
       error: err => this.feedback.error(err),
     });
+    // Para mostrar qué tarea bloquea a cada una. Un contributor puede no verlas todas.
+    this.tasksService.listDependencies(this.path).subscribe({
+      next: deps => this.dependencies.set(deps),
+      error: () => this.dependencies.set([]),
+    });
+  }
+
+  /** Títulos de las tareas que bloquean a esta (dependencias FS con la bloqueante sin completar). */
+  blockedBy(task: Task): string[] {
+    const doneIds = new Set(this.tasks().filter(t => t.status === 'done').map(t => Number(t.id)));
+    const id = Number(task.id);
+    return this.dependencies()
+      .filter(d => d.dependency_type === 'FS' && d.blocked_task_id === id && !doneIds.has(d.blocking_task_id))
+      .map(d => d.blocking_task_title);
   }
 
   assigneeInitials(task: Task): string[] {
@@ -214,10 +257,15 @@ export class ProjectBoard implements OnInit {
     });
   }
 
+  /** La columna virtual "Bloqueadas" (data undefined) no acepta tarjetas. */
+  readonly dropAllowed = (_drag: CdkDrag, drop: CdkDropList<TaskStatus | undefined>): boolean => drop.data != null;
+
   /** Soltar una tarjeta en otra columna cambia el estado de la tarea. */
-  onDrop(event: CdkDragDrop<TaskStatus, TaskStatus, Task>): void {
+  onDrop(event: CdkDragDrop<TaskStatus | undefined, TaskStatus | undefined, Task>): void {
     if (event.previousContainer === event.container) return;
-    this.changeStatus(event.item.data, event.container.data);
+    const status = event.container.data;
+    if (!status) return;
+    this.changeStatus(event.item.data, status);
   }
 
   deleteTask(task: Task): void {

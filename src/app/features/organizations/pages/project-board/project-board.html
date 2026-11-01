@@ -44,31 +44,36 @@
     <p class="subtext text-xs mt-0 mb-3"><i class="pi pi-arrows-h mr-1"></i>Arrastrá una tarea a otra columna para cambiar su estado.</p>
   }
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5" cdkDropListGroup>
-    @for (col of columns(); track col.status) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5" cdkDropListGroup>
+    @for (col of columns(); track col.label) {
       <div class="flex flex-col rounded-[14px] p-3" style="background: color-mix(in srgb, var(--card-bg) 45%, transparent); box-shadow: var(--card-shadow)">
         <div class="flex items-center gap-2 px-1 pb-2.5">
-          <span class="w-2 h-2 rounded-full flex-none" [style.background]="col.color"></span>
+          @if (col.blocked) {
+            <i class="pi pi-lock text-[11px] flex-none" style="color: var(--lock)"></i>
+          } @else {
+            <span class="w-2 h-2 rounded-full flex-none" [style.background]="col.color"></span>
+          }
           <span class="text-[13px] font-medium">{{ col.label }}</span>
           <span class="text-xs subtext ml-auto">{{ col.tasks.length }}</span>
-          @if (isGroupLead()) {
+          @if (isGroupLead() && !col.blocked) {
             <button type="button" class="icon-btn !w-6 !h-6" title="Agregar tarea"
               (click)="openTaskDialog(null, col.status)"><i class="pi pi-plus text-xs"></i></button>
           }
         </div>
 
-        <!-- Zona donde se sueltan las tareas -->
+        <!-- Zona donde se sueltan las tareas (la columna de bloqueadas no recibe drops) -->
         <div class="board-column flex flex-col gap-2.5 min-h-24 flex-1" cdkDropList [cdkDropListData]="col.status"
-          [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="onDrop($event)">
+          [cdkDropListSortingDisabled]="true" [cdkDropListEnterPredicate]="dropAllowed" (cdkDropListDropped)="onDrop($event)">
         @for (task of col.tasks; track task.id) {
           <div class="flex flex-col gap-2.5 p-3.5 rounded-[10px]" cdkDrag [cdkDragData]="task"
             [class.opacity-60]="task.status === 'done'"
             style="background: var(--card-bg); box-shadow: var(--card-shadow)"
-            [cdkDragDisabled]="!canChangeStatus(task)" [class.cursor-grab]="canChangeStatus(task)">
+            [cdkDragDisabled]="col.blocked || !canChangeStatus(task)"
+            [class.cursor-grab]="!col.blocked && canChangeStatus(task)">
             <div class="flex items-start justify-between gap-2">
               <span class="text-sm font-medium leading-snug flex items-start gap-1.5" [class.line-through]="task.status === 'done'">
                 @if (task.blocked) {
-                  <i class="pi pi-lock text-xs flex-none mt-0.5" style="color: var(--color-accent-300)" title="Bloqueada por otra tarea"></i>
+                  <i class="pi pi-lock text-xs flex-none mt-0.5" style="color: var(--lock)" title="Bloqueada por otra tarea"></i>
                 }
                 {{ task.title }}
               </span>
@@ -80,16 +85,25 @@
               }
             </div>
 
+            @if (col.blocked && blockedBy(task).length) {
+              <div class="flex items-start gap-1.5 text-[11px] leading-snug" style="color: var(--lock)">
+                <i class="pi pi-arrow-circle-right text-[11px] flex-none mt-0.5"></i>
+                <span>Espera a: {{ blockedBy(task).join(', ') }}</span>
+              </div>
+            }
+
             <div class="flex items-center justify-between gap-2">
               <div class="flex -space-x-1.5" [title]="assigneeNames(task)">
                 @for (ini of assigneeInitials(task); track $index) {
                   <span class="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[10px] font-medium ring-2"
-                    style="background: var(--color-neutral-800); color: var(--color-neutral-100); --tw-ring-color: var(--card-bg)">{{ ini }}</span>
+                    style="background: var(--avatar-bg); color: var(--avatar-fg); --tw-ring-color: var(--card-bg)">{{ ini }}</span>
                 } @empty {
                   <span class="text-[11px] subtext">Sin asignar</span>
                 }
               </div>
-              @if (canChangeStatus(task)) {
+              @if (col.blocked) {
+                <span class="text-[11px]" style="color: var(--lock)">{{ statusLabels[task.status] }}</span>
+              } @else if (canChangeStatus(task)) {
                 <p-select [options]="statusOptions" optionLabel="label" optionValue="value" size="small"
                   [ngModel]="task.status" (ngModelChange)="changeStatus(task, $event)" appendTo="body" />
               }
@@ -150,7 +164,7 @@
           @for (c of comments(); track c.id) {
             <div class="flex gap-2.5">
               <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-medium flex-none"
-                style="background: var(--color-neutral-800); color: var(--color-neutral-100)">{{ commentInitials(c.author_username) }}</span>
+                style="background: var(--avatar-bg); color: var(--avatar-fg)">{{ commentInitials(c.author_username) }}</span>
               <div class="min-w-0 flex-1">
                 <div class="flex items-baseline gap-2">
                   <span class="text-sm font-medium truncate">{{ c.author_username }}</span>

@@ -9,7 +9,7 @@
   <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
     <div class="flex items-center gap-4 min-w-0">
       <div class="w-14 h-14 rounded-[12px] flex items-center justify-center flex-none text-xl font-medium overflow-hidden"
-        style="background: var(--color-accent-900); color: var(--color-accent-300)">
+        style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
         @if (org.logo_url) {
           <img [src]="org.logo_url" [alt]="org.name" class="w-full h-full object-cover" />
         } @else {
@@ -47,7 +47,7 @@
         @for (group of groups(); track group.id) {
           <div class="flex items-center gap-3 p-3 rounded-[8px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
             <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
-              style="background: var(--color-accent-900); color: var(--color-accent-300)">
+              style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
               <i class="pi pi-users text-base"></i>
             </div>
             <a [routerLink]="['/organizations', org.id, 'groups', group.id]" class="flex-1 min-w-0 text-sm font-medium truncate hover:underline">
@@ -80,7 +80,7 @@
             <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
               <div class="flex items-center gap-2.5 min-w-0">
                 <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
-                  style="background: var(--color-neutral-800); color: var(--color-neutral-100)">
+                  style="background: var(--avatar-bg); color: var(--avatar-fg)">
                   {{ m.username.slice(0, 2).toUpperCase() }}
                 </span>
                 <span class="text-sm truncate">

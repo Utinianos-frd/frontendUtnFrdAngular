@@ -172,7 +172,7 @@ export class DependencyGraph implements OnInit {
       const blockingDone = byId.get(dep.blocking_task_id)!.status === 'done';
       const pendingFF = dep.dependency_type === 'FF' && !blockingDone;
       let color = 'var(--color-accent)';
-      if (dep.dependency_type === 'FF') color = pendingFF ? '#d29922' : 'var(--color-accent-300)';
+      if (dep.dependency_type === 'FF') color = pendingFF ? '#d29922' : 'var(--color-accent-500)';
       const dash = dep.dependency_type === 'FF' ? '6 5' : '';
       return { dep, d, color, dash, pendingFF };
     });

@@ -44,7 +44,7 @@
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
-                  style="background: var(--color-accent-900); color: var(--color-accent-300)">
+                  style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
                   <i class="pi pi-folder text-base"></i>
                 </div>
                 <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', project.id]"
@@ -78,7 +78,7 @@
         @if (lead(); as lead) {
           <div class="flex items-center gap-3">
             <span class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-none"
-              style="background: var(--color-accent-900); color: var(--color-accent-300)">
+              style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
               {{ lead.username.slice(0, 2).toUpperCase() }}
             </span>
             <div class="min-w-0">
@@ -134,8 +134,8 @@
             <div class="flex items-center justify-between gap-3 py-2.5 border-t divider">
               <div class="flex items-center gap-2.5 min-w-0">
                 <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
-                  [style.background]="m.role === 'group_lead' ? 'var(--color-accent-900)' : 'var(--color-neutral-800)'"
-                  [style.color]="m.role === 'group_lead' ? 'var(--color-accent-300)' : 'var(--color-neutral-100)'">
+                  [style.background]="m.role === 'group_lead' ? 'var(--accent-tile-bg)' : 'var(--avatar-bg)'"
+                  [style.color]="m.role === 'group_lead' ? 'var(--accent-tile-fg)' : 'var(--avatar-fg)'">
                   {{ m.username.slice(0, 2).toUpperCase() }}
                 </span>
                 <span class="text-sm truncate">

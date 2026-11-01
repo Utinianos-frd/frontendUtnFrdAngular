@@ -1,117 +1,112 @@
-<!-- Datos de ejemplo: todavía no hay endpoints de estadísticas. -->
-<div class="grid grid-cols-2 md:grid-cols-4 md:auto-rows-[150px] gap-3.5 mt-2">
+@if (loading()) {
+  <div class="subtext text-sm py-10 text-center"><i class="pi pi-spin pi-spinner mr-2"></i>Cargando…</div>
+} @else if (dashboard(); as d) {
+  <div class="grid grid-cols-2 md:grid-cols-4 md:auto-rows-[150px] gap-3.5 mt-2">
 
-  <!-- Grupos -->
-  <section class="card col-span-2 md:row-span-2 p-5 flex flex-col gap-3.5">
-    <div class="flex items-center justify-between">
-      <span class="card-kicker">Grupos</span>
-      <a routerLink="/organizations" class="btn btn-link text-xs">Ver todos <i class="pi pi-arrow-right text-[10px]"></i></a>
-    </div>
-    <div class="flex flex-col gap-2 flex-1 justify-center">
-      @for (g of groups; track g.name) {
-        <div class="flex items-center gap-3 p-3 rounded-[8px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
-          <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
-            style="background: var(--color-accent-900); color: var(--color-accent-300)">
-            <i class="pi pi-users text-base"></i>
+    <!-- Grupos -->
+    <section class="card col-span-2 md:row-span-2 p-5 flex flex-col gap-3.5">
+      <div class="flex items-center justify-between">
+        <span class="card-kicker">Grupos</span>
+        <a routerLink="/organizations" class="btn btn-link text-xs">Ver todos <i class="pi pi-arrow-right text-[10px]"></i></a>
+      </div>
+      <div class="flex flex-col gap-2 flex-1 justify-center">
+        @for (g of d.groups; track g.name) {
+          <div class="flex items-center gap-3 p-3 rounded-[8px]" style="background: color-mix(in srgb, var(--text) 3%, transparent)">
+            <div class="w-9 h-9 rounded-[8px] flex items-center justify-center flex-none"
+              style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
+              <i class="pi pi-users text-base"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate">{{ g.name }}</div>
+              <div class="text-xs text-muted truncate">Lead: {{ g.lead }} · {{ g.projects }} proyectos · {{ g.members }} miembros</div>
+            </div>
+            <span class="tag flex-none" [style.background]="'color-mix(in srgb, ' + loadColor(g.load) + ' 18%, transparent)'"
+              [style.color]="loadColor(g.load)">{{ g.load }}</span>
           </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium truncate">{{ g.name }}</div>
-            <div class="text-xs text-muted truncate">{{ g.lead }} · {{ g.projects }} proyectos · {{ g.members }} miembros</div>
-          </div>
-          <span class="tag flex-none" [style.background]="'color-mix(in srgb, ' + loadColor(g.load) + ' 18%, transparent)'"
-            [style.color]="loadColor(g.load)">{{ g.load }}</span>
-        </div>
-      }
-    </div>
-  </section>
+        } @empty {
+          <p class="text-sm text-muted m-0">No pertenecés a ningún grupo todavía.</p>
+        }
+      </div>
+    </section>
 
-  <!-- Miembros -->
-  <section class="card p-5 flex flex-col justify-between">
-    <div class="flex items-center justify-between">
-      <span class="card-kicker">Miembros</span>
-      <i class="pi pi-users text-lg subtext"></i>
-    </div>
-    <div>
-      <div class="text-[44px] font-medium leading-none tracking-tight">17</div>
-      <div class="text-xs text-muted mt-1.5">en 3 grupos</div>
-    </div>
-  </section>
+    <!-- Miembros -->
+    <section class="card p-5 flex flex-col justify-between">
+      <div class="flex items-center justify-between">
+        <span class="card-kicker">Miembros</span>
+        <i class="pi pi-users text-lg subtext"></i>
+      </div>
+      <div>
+        <div class="text-[44px] font-medium leading-none tracking-tight">{{ d.members_total }}</div>
+        <div class="text-xs text-muted mt-1.5">en {{ d.groups_total }} grupos</div>
+      </div>
+    </section>
 
-  <!-- Bloqueadas -->
-  <section class="card p-5 flex flex-col justify-between"
-    style="background: radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%), var(--card-bg); box-shadow: 0 0 0 1px var(--color-accent-700)">
-    <div class="flex items-center justify-between">
-      <span class="card-kicker">Bloqueadas</span>
-      <i class="pi pi-lock text-lg" style="color: var(--color-accent-300)"></i>
-    </div>
-    <div>
-      <div class="text-[44px] font-medium leading-none tracking-tight" style="color: var(--color-accent-200)">4</div>
-      <div class="text-xs text-muted mt-1.5">esperan a otra tarea</div>
-    </div>
-  </section>
+    <!-- Bloqueadas -->
+    <section class="card p-5 flex flex-col justify-between"
+      style="background: radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%), var(--card-bg); box-shadow: 0 0 0 1px var(--color-accent-700)">
+      <div class="flex items-center justify-between">
+        <span class="card-kicker">Bloqueadas</span>
+        <i class="pi pi-lock text-lg" style="color: var(--lock)"></i>
+      </div>
+      <div>
+        <div class="text-[44px] font-medium leading-none tracking-tight" style="color: var(--accent-tile-fg)">{{ d.blocked_count }}</div>
+        <div class="text-xs text-muted mt-1.5">esperan a otra tarea</div>
+      </div>
+    </section>
 
-  <!-- Carga del equipo -->
-  <section class="card col-span-2 p-5 flex flex-col gap-3">
-    <div class="flex items-center justify-between">
+    <!-- Carga del equipo -->
+    <section class="card col-span-2 p-5 flex flex-col gap-3">
       <span class="card-kicker">Carga del equipo</span>
-      <span class="text-xs text-muted">umbral 8 tareas</span>
-    </div>
-    <div class="flex gap-2.5 flex-1 items-end">
-      @for (w of workloadMini; track w.initials) {
-        <div class="flex-1 flex flex-col items-center gap-1.5 justify-end h-full">
-          <div class="w-full max-w-[34px] rounded-t-md" [style.height]="w.barHeight" [style.background]="w.barColor"></div>
-          <span class="text-[10px] text-muted">{{ w.initials }}</span>
-        </div>
-      }
-    </div>
-  </section>
-
-  <!-- Actividad reciente -->
-  <section class="card col-span-2 md:row-span-2 p-5 flex flex-col gap-3">
-    <span class="card-kicker">Actividad reciente</span>
-    <div class="flex flex-col">
-      @for (a of activity; track $index) {
-        <div class="flex gap-3 py-2.5">
-          <div class="w-[30px] h-[30px] rounded-full flex items-center justify-center flex-none"
-            style="background: var(--color-neutral-800); color: var(--color-neutral-200)">
-            <i class="pi {{ a.icon }} text-xs"></i>
+      <div class="flex gap-2.5 flex-1 items-end">
+        @for (w of d.team_load; track $index) {
+          <div class="flex-1 flex flex-col items-center gap-1.5 justify-end h-full">
+            <div class="w-full max-w-[34px] rounded-t-md" [style.height]="barHeight(w.status)" [style.background]="barColor(w.status)"></div>
+            <span class="text-[10px] text-muted">{{ w.initials }}</span>
           </div>
-          <div class="min-w-0">
-            <div class="text-[13px] leading-snug">{{ a.text }}</div>
-            <div class="text-[11px] subtext mt-0.5">{{ a.time }}</div>
+        } @empty {
+          <p class="text-sm text-muted m-0 self-center">Sin miembros para mostrar.</p>
+        }
+      </div>
+    </section>
+
+    <!-- Actividad reciente -->
+    <section class="card col-span-2 md:row-span-2 p-5 flex flex-col gap-3 overflow-hidden">
+      <span class="card-kicker flex-none">Actividad reciente</span>
+      <div class="flex flex-col min-h-0 overflow-y-auto">
+        @for (a of d.activity; track $index) {
+          <div class="flex gap-3 py-2.5">
+            <div class="w-[30px] h-[30px] rounded-full flex items-center justify-center flex-none"
+              style="background: var(--avatar-bg); color: var(--avatar-fg)">
+              <i class="pi {{ a.icon }} text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-[13px] leading-snug break-words">{{ a.text }}</div>
+              <div class="text-[11px] subtext mt-0.5">{{ relativeTime(a.at) }}</div>
+            </div>
           </div>
-        </div>
-      }
-    </div>
-  </section>
+        } @empty {
+          <p class="text-sm text-muted m-0">Sin actividad reciente.</p>
+        }
+      </div>
+    </section>
 
-  <!-- Accesos rápidos -->
-  <section class="card col-span-2 p-5 flex flex-col gap-3 justify-center">
-    <span class="card-kicker">Accesos rápidos</span>
-    <div class="flex gap-2 flex-wrap">
-      <a routerLink="/organizations" class="btn btn-primary"><i class="pi pi-plus"></i> Nueva tarea</a>
-      <a routerLink="/organizations" class="btn btn-secondary"><i class="pi pi-users"></i> Crear grupo</a>
-      <a routerLink="/organizations" class="btn btn-secondary"><i class="pi pi-link"></i> Invitar</a>
-    </div>
-  </section>
+    <!-- Accesos rápidos -->
+    <section class="card col-span-2 p-5 flex flex-col gap-3 justify-center">
+      <span class="card-kicker">Accesos rápidos</span>
+      <div class="flex gap-2 flex-wrap">
+        <a routerLink="/organizations" class="btn btn-primary"><i class="pi pi-building"></i> Organizaciones</a>
+        <a routerLink="/workload" class="btn btn-secondary"><i class="pi pi-chart-bar"></i> Carga de trabajo</a>
+      </div>
+    </section>
 
-  <!-- Plan -->
-  <section class="card col-span-2 p-5 flex items-center justify-between gap-4">
-    <div>
-      <span class="card-kicker">Plan</span>
-      <div class="text-2xl font-medium mt-2">{{ planTier }}</div>
-      <div class="text-xs text-muted">Grupos y proyectos sin límite</div>
-    </div>
-    <i class="pi pi-verified text-[44px]" style="color: var(--accent)"></i>
-  </section>
-</div>
-
-<!-- Botón de Modo Foco -->
-<button type="button" title="Modo Foco" (click)="openFocus()"
-  class="fixed bottom-7 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center cursor-pointer z-40 transition hover:brightness-115"
-  style="border: 1px solid var(--color-accent);
-    background: radial-gradient(circle at 50% 30%, var(--color-accent-700), var(--color-accent-900));
-    color: var(--color-accent-100);
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 12%, transparent), 0 0 32px color-mix(in srgb, var(--color-accent) 45%, transparent), 0 10px 24px rgba(0, 0, 0, 0.5)">
-  <i class="pi pi-stopwatch text-2xl"></i>
-</button>
+    <!-- Plan -->
+    <section class="card col-span-2 p-5 flex items-center justify-between gap-4">
+      <div>
+        <span class="card-kicker">Plan</span>
+        <div class="text-2xl font-medium mt-2">{{ planLabel() }}</div>
+        <div class="text-xs text-muted">{{ d.plan === 'pro' ? 'Grupos y proyectos sin límite' : 'Plan básico' }}</div>
+      </div>
+      <i class="pi pi-verified text-[44px]" style="color: var(--accent)"></i>
+    </section>
+  </div>
+}

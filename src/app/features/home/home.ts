@@ -1,48 +1,36 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { FocusSessionService } from '../../core/services/focus-session.service';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Dashboard, WorkloadStatus } from '../../core/models';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { Feedback } from '../../shared/ui/feedback';
 
-interface Group {
-  name: string;
-  lead: string;
-  members: number;
-  projects: number;
-  load: string;
-}
-
-/** Pantalla "Inicio". Por ahora muestra datos de ejemplo del diseño. */
+/** Pantalla "Inicio": panel con datos reales del usuario (GET /dashboard). */
 @Component({
   selector: 'app-home',
   imports: [RouterLink],
   templateUrl: './home.html',
 })
-export class Home {
-  readonly planTier = 'Pro';
-
-  readonly groups: Group[] = [
-    { name: 'Producto', lead: 'Manuel Ruiz', members: 8, projects: 3, load: 'Alta' },
-    { name: 'Diseño', lead: 'Diego Paz', members: 5, projects: 2, load: 'Media' },
-    { name: 'Infraestructura', lead: 'Sol Aguirre', members: 4, projects: 1, load: 'Baja' },
-  ];
-
-  readonly activity = [
-    { icon: 'pi-check', text: 'Diego Paz completó "Diseñar wireframes de onboarding"', time: 'Hace 12 min' },
-    { icon: 'pi-lock-open', text: 'Se desbloqueó la tarea "Prototipo interactivo"', time: 'Hace 12 min' },
-    { icon: 'pi-user-plus', text: 'Sol Aguirre se unió al grupo Infraestructura', time: 'Hace 1 h' },
-    { icon: 'pi-sitemap', text: 'Nueva dependencia agregada en "Migración API"', time: 'Hace 3 h' },
-  ];
-
-  // barHeight/barColor son solo para el mini-gráfico de ejemplo del dashboard.
-  readonly workloadMini = [
-    { initials: 'MR', status: 'Disponible', barHeight: '22px', barColor: '#3fb950' },
-    { initials: 'DP', status: 'Sobrecargado', barHeight: '58px', barColor: '#f85149' },
-    { initials: 'SA', status: 'Ocupado', barHeight: '40px', barColor: '#d29922' },
-  ];
-
-  private focus = inject(FocusSessionService);
-  private router = inject(Router);
+export class Home implements OnInit {
+  private dashboardService = inject(DashboardService);
   private feedback = inject(Feedback);
+
+  dashboard = signal<Dashboard | null>(null);
+  loading = signal(true);
+
+  readonly planLabel = computed(() => (this.dashboard()?.plan === 'pro' ? 'Pro' : 'Free'));
+
+  ngOnInit(): void {
+    this.dashboardService.get().subscribe({
+      next: data => {
+        this.dashboard.set(data);
+        this.loading.set(false);
+      },
+      error: err => {
+        this.loading.set(false);
+        this.feedback.error(err);
+      },
+    });
+  }
 
   /** Color de severidad para la etiqueta de carga de cada grupo. */
   loadColor(load: string): string {
@@ -51,14 +39,30 @@ export class Home {
     return '#3fb950';
   }
 
-  /** El botón flotante retoma la sesión activa; si no hay, orienta a iniciarla. */
-  openFocus(): void {
-    this.focus.loadActive().subscribe(session => {
-      if (session) {
-        this.router.navigate(['/focus']);
-      } else {
-        this.feedback.info('Iniciá el Modo Foco desde el tablero de un proyecto, eligiendo tus tareas.');
-      }
-    });
+  /** Altura de la barra del mini-gráfico de carga del equipo, según estado. */
+  barHeight(status: WorkloadStatus): string {
+    if (status === 'overloaded') return '58px';
+    if (status === 'busy') return '40px';
+    return '22px';
+  }
+
+  barColor(status: WorkloadStatus): string {
+    if (status === 'overloaded') return '#f85149';
+    if (status === 'busy') return '#d29922';
+    return '#3fb950';
+  }
+
+  /** "Hace X" a partir de un ISO. */
+  relativeTime(iso: string): string {
+    const then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    const secs = Math.max(0, Math.round((Date.now() - then) / 1000));
+    if (secs < 60) return 'Recién';
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `Hace ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Hace ${hrs} h`;
+    const days = Math.floor(hrs / 24);
+    return days === 1 ? 'Ayer' : `Hace ${days} días`;
   }
 }

@@ -32,6 +32,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/workload/workload').then(m => m.Workload)
             },
             {
+                path: 'profile',
+                loadComponent: () => import('./features/profile/profile').then(m => m.Profile)
+            },
+            {
                 path: 'organizations',
                 loadComponent: () => import('./features/organizations/pages/organization-list/organization-list').then(m => m.OrganizationList)
             },

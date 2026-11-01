@@ -78,12 +78,12 @@
             style="color: var(--text)">
             <span class="flex items-center gap-2.5 min-w-0">
               <span class="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-medium flex-none"
-                style="background: var(--color-neutral-800); color: var(--color-neutral-100)">{{ m.username.slice(0, 2).toUpperCase() }}</span>
+                style="background: var(--avatar-bg); color: var(--avatar-fg)">{{ m.username.slice(0, 2).toUpperCase() }}</span>
               <span class="truncate">{{ m.username }}</span>
             </span>
             <span class="text-xs subtext">{{ roleLabels[m.group_role] }}</span>
             <span>{{ m.active_task_count }}</span>
-            <span class="h-1.5 rounded-full overflow-hidden" style="background: var(--color-neutral-800)"
+            <span class="h-1.5 rounded-full overflow-hidden" style="background: var(--track)"
               [title]="m.active_task_count + ' de ' + threshold() + ' tareas'">
               <span class="block h-full rounded-full transition-all" [style.width.%]="loadPct(m)" [style.background]="statusColors[m.status]"></span>
             </span>

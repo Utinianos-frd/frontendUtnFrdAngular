@@ -38,14 +38,14 @@
       Fin → Inicio (FS)
     </span>
     <span class="flex items-center gap-2">
-      <svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--color-accent-300)" stroke-width="2" stroke-dasharray="6 5"/></svg>
+      <svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--color-accent-500)" stroke-width="2" stroke-dasharray="6 5"/></svg>
       Fin → Fin (FF)
     </span>
     <span class="flex items-center gap-2">
       <svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="#d29922" stroke-width="2" stroke-dasharray="6 5"/></svg>
       FF pendiente
     </span>
-    <span class="flex items-center gap-1.5"><i class="pi pi-lock text-xs" style="color: var(--color-accent-300)"></i> Bloqueada</span>
+    <span class="flex items-center gap-1.5"><i class="pi pi-lock text-xs" style="color: var(--lock)"></i> Bloqueada</span>
   </div>
 
   <!-- Grafo -->
@@ -74,7 +74,7 @@
               <span class="w-2 h-2 rounded-full flex-none" [style.background]="statusDot(n.task.status)"></span>
               <span class="text-[13px] font-medium truncate flex-1" [title]="n.task.title">{{ n.task.title }}</span>
               @if (n.task.blocked) {
-                <i class="pi pi-lock text-xs flex-none" style="color: var(--color-accent-300)" title="Bloqueada"></i>
+                <i class="pi pi-lock text-xs flex-none" style="color: var(--lock)" title="Bloqueada"></i>
               }
             </div>
             <div class="text-[11px] subtext">{{ statusLabels[n.task.status] }}</div>

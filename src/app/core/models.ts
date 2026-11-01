@@ -106,6 +106,40 @@ export interface MemberWorkloadDetail extends Omit<MemberWorkload, 'group_role'>
     active_tasks: ActiveTask[];
 }
 
+// Panel de inicio (dashboard)
+
+export interface DashboardGroup {
+    name: string;
+    lead: string;
+    projects: number;
+    members: number;
+    /** 'Alta' | 'Media' | 'Baja' */
+    load: string;
+}
+
+export interface DashboardTeamMember {
+    initials: string;
+    status: WorkloadStatus;
+}
+
+export interface DashboardActivity {
+    icon: string;
+    text: string;
+    /** ISO 8601 */
+    at: string;
+}
+
+export interface Dashboard {
+    id: string;
+    groups_total: number;
+    members_total: number;
+    blocked_count: number;
+    plan: string;
+    groups: DashboardGroup[];
+    team_load: DashboardTeamMember[];
+    activity: DashboardActivity[];
+}
+
 // Modo Foco (Pomodoro)
 
 export type FocusSessionStatus = 'active' | 'ended';

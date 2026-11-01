@@ -65,20 +65,28 @@
    Variables semánticas — MODO CLARO (Nocturne claro).
    ============================================================ */
 :root {
-  --bg: #f6f7fb;
-  --nav-bg: #ffffff;
-  --card-bg: #ffffff;
-  --text: #1c1c24;
-  --subtext: rgba(28, 28, 36, 0.55);
-  --divider: rgba(28, 28, 36, 0.1);
-  --chip-bg: rgba(145, 132, 217, 0.1);
-  --toggle-bg: #e2e0ea;
+  --bg: #e6e7ef;
+  --nav-bg: #f5f6fb;
+  --card-bg: #f5f6fb;
+  --text: #1f1f27;
+  --subtext: rgba(28, 28, 36, 0.6);
+  --divider: rgba(28, 28, 36, 0.12);
+  --chip-bg: rgba(108, 60, 233, 0.1);
+  --toggle-bg: #d3d2df;
   --knob-bg: #ffffff;
-  --card-shadow: 0 0 0 1px rgba(28, 28, 36, 0.06), 0 6px 18px rgba(28, 28, 36, 0.08);
+  --card-shadow: 0 0 0 1px rgba(28, 28, 36, 0.07), 0 6px 18px rgba(28, 28, 36, 0.1);
   --tile-shadow: 0 10px 22px rgba(28, 28, 36, 0.22);
-  --nav-shadow: 0 8px 24px rgba(28, 28, 36, 0.12);
+  --nav-shadow: 0 8px 24px rgba(28, 28, 36, 0.14);
   --accent: #6c3ce9;
   --accent-contrast: #ffffff;
+
+  /* Roles que cambian por tema (avatares, tiles de icono, etc.) */
+  --avatar-bg: var(--color-neutral-300);
+  --avatar-fg: var(--color-neutral-700);
+  --accent-tile-bg: var(--color-accent-200);
+  --accent-tile-fg: var(--color-accent-700);
+  --lock: var(--color-accent-700);
+  --track: color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 /* ============================================================
@@ -102,6 +110,13 @@
   --nav-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   --accent: var(--color-accent);
   --accent-contrast: #161826;
+
+  --avatar-bg: var(--color-neutral-800);
+  --avatar-fg: var(--color-neutral-100);
+  --accent-tile-bg: var(--color-accent-900);
+  --accent-tile-fg: var(--color-accent-300);
+  --lock: var(--color-accent-300);
+  --track: var(--color-neutral-800);
 }
 
 /* ============================================================
@@ -335,11 +350,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tag-accent {
+  background: var(--color-accent-200);
+  color: var(--color-accent-700);
+}
+
+.tag-neutral {
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+:root.app-dark .tag-accent {
   background: var(--color-accent-800);
   color: var(--color-accent-100);
 }
 
-.tag-neutral {
+:root.app-dark .tag-neutral {
   background: var(--color-neutral-800);
   color: var(--color-neutral-100);
 }

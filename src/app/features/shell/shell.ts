@@ -26,10 +26,14 @@ export class Shell implements OnInit {
 
   username = computed(() => this.authService.currentUser()?.username ?? '');
   initials = computed(() => this.username().slice(0, 2).toUpperCase() || '?');
+  avatarUrl = computed(() => this.authService.currentUser()?.avatar_url ?? '');
 
   // Tema: oscuro por defecto. La clase .app-dark se aplica también en index.html
   // antes de renderizar; acá la mantenemos sincronizada con la preferencia guardada.
   dark = signal(localStorage.getItem(THEME_KEY) !== 'light');
+
+  // Menú hamburguesa (solo móvil).
+  menuOpen = signal(false);
 
   /** Fecha de hoy en español, p. ej. "Vie 10 oct". */
   readonly todayLabel = new Intl.DateTimeFormat('es-AR', {
@@ -45,6 +49,14 @@ export class Shell implements OnInit {
 
   toggleTheme(): void {
     this.dark.update(d => !d);
+  }
+
+  toggleMenu(): void {
+    this.menuOpen.update(o => !o);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
   }
 
   ngOnInit(): void {

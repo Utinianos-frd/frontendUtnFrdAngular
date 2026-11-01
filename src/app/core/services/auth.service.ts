@@ -16,7 +16,17 @@ export interface CurrentUser {
     id: number;
     username: string;
     email: string;
+    role?: string;
+    first_name?: string;
+    last_name?: string;
+    age?: number | null;
+    phone?: string;
+    bio?: string;
+    avatar_url?: string;
 }
+
+/** Campos editables del perfil (PATCH /auth/me). */
+export type ProfileChanges = Partial<Pick<CurrentUser, 'first_name' | 'last_name' | 'age' | 'phone' | 'bio' | 'avatar_url'>>;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -63,6 +73,15 @@ export class AuthService {
 
     loadCurrentUser(): Observable<CurrentUser> {
         return this.http.get<any>(`${API_URL}/auth/me`).pipe(
+            map(res => ({ id: Number(res.data.id), ...res.data.attributes }) as CurrentUser),
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    /** Edita el perfil del usuario autenticado y actualiza el estado local. */
+    updateProfile(changes: ProfileChanges): Observable<CurrentUser> {
+        const body = { data: { type: 'users', attributes: changes } };
+        return this.http.patch<any>(`${API_URL}/auth/me`, body).pipe(
             map(res => ({ id: Number(res.data.id), ...res.data.attributes }) as CurrentUser),
             tap(user => this.currentUser.set(user))
         );

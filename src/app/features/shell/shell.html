@@ -8,12 +8,12 @@
         <img src="assets/img/tasker_logo.png" alt="Tasker" class="h-16 w-auto object-contain" />
       </a>
 
-      <span class="w-px self-stretch my-1 flex-none" style="background: var(--divider)"></span>
+      <span class="w-px self-stretch my-1 flex-none hidden md:block" style="background: var(--divider)"></span>
 
-      <nav class="flex gap-1 flex-1 min-w-0 overflow-x-auto" style="scrollbar-width: none">
+      <nav class="hidden md:flex gap-1 flex-1 min-w-0 overflow-x-auto" style="scrollbar-width: none">
         @for (tab of tabs; track tab.path) {
           <a [routerLink]="tab.path"
-            routerLinkActive="!bg-[var(--color-accent-900)] !border-[var(--color-accent-700)] !text-[var(--color-accent-200)]"
+            routerLinkActive="!bg-[var(--accent-tile-bg)] !border-[var(--accent)] !text-[var(--accent-tile-fg)]"
             class="flex-none flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-medium border border-transparent transition-colors hover:text-[var(--text)]"
             style="color: var(--color-neutral-400)">
             <i class="pi {{ tab.icon }} text-sm"></i>{{ tab.label }}
@@ -21,7 +21,7 @@
         }
       </nav>
 
-      <div class="flex items-center gap-1 flex-none">
+      <div class="flex items-center gap-1 flex-none ml-auto md:ml-0">
         <button type="button" class="icon-btn rounded-[10px]" [title]="dark() ? 'Modo claro' : 'Modo oscuro'" (click)="toggleTheme()">
           <i class="pi" [class]="dark() ? 'pi-sun' : 'pi-moon'"></i>
         </button>
@@ -30,20 +30,46 @@
           <i class="pi pi-bell"></i>
           <span class="absolute top-2 right-2 w-[7px] h-[7px] rounded-full" style="background: var(--accent)"></span>
         </button>
+        <span class="md:hidden">
+          <button type="button" class="icon-btn rounded-[10px]" [title]="menuOpen() ? 'Cerrar menú' : 'Menú'" (click)="toggleMenu()">
+            <i class="pi" [class]="menuOpen() ? 'pi-times' : 'pi-bars'"></i>
+          </button>
+        </span>
       </div>
     </div>
 
+    <!-- Menú desplegable (solo móvil) -->
+    @if (menuOpen()) {
+      <nav class="basis-full w-full md:hidden rounded-[14px] p-2 flex flex-col gap-1"
+        style="background: color-mix(in srgb, var(--card-bg) 92%, transparent); backdrop-filter: blur(14px); box-shadow: var(--card-shadow)">
+        @for (tab of tabs; track tab.path) {
+          <a [routerLink]="tab.path" (click)="closeMenu()"
+            routerLinkActive="!bg-[var(--accent-tile-bg)] !text-[var(--accent-tile-fg)]"
+            class="flex items-center gap-2.5 rounded-[10px] px-3.5 py-2.5 text-sm font-medium transition-colors"
+            style="color: var(--text)">
+            <i class="pi {{ tab.icon }} text-sm w-4"></i>{{ tab.label }}
+          </a>
+        }
+      </nav>
+    }
+
     <!-- Panel de usuario / saludo -->
     <div class="flex-[1_1_260px] min-w-0 rounded-[14px] flex items-center gap-3 px-4 py-2.5 overflow-hidden"
-      style="box-shadow: var(--card-shadow); background: linear-gradient(120deg, var(--color-accent-900), var(--color-surface))">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-none"
-        style="background: var(--color-accent-800); color: var(--color-accent-100); box-shadow: 0 0 0 2px var(--color-accent-700), 0 0 18px color-mix(in srgb, var(--color-accent) 35%, transparent)">
-        {{ initials() }}
-      </div>
-      <div class="min-w-0 flex-1">
-        <div class="text-base font-medium leading-tight truncate">Buen día{{ username() ? ', ' + username() : '' }}</div>
-        <div class="text-xs truncate" style="color: var(--color-neutral-400)">{{ todayLabel }}</div>
-      </div>
+      style="background: color-mix(in srgb, var(--card-bg) 82%, transparent); backdrop-filter: blur(14px); box-shadow: var(--card-shadow)">
+      <a routerLink="/profile" title="Mi perfil" class="flex items-center gap-3 min-w-0 flex-1 rounded-[10px] -m-1 p-1 transition-colors hover:bg-[color-mix(in_srgb,var(--text)_6%,transparent)]">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-none overflow-hidden"
+          style="background: var(--accent-tile-bg); color: var(--accent-tile-fg)">
+          @if (avatarUrl()) {
+            <img [src]="avatarUrl()" alt="Avatar" class="w-full h-full object-cover" />
+          } @else {
+            {{ initials() }}
+          }
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-base font-medium leading-tight truncate">Buen día{{ username() ? ', ' + username() : '' }}</div>
+          <div class="text-xs subtext truncate">{{ todayLabel }}</div>
+        </div>
+      </a>
       <button type="button" (click)="logout()" title="Cerrar sesión" class="icon-btn rounded-[10px] flex-none">
         <i class="pi pi-sign-out"></i>
       </button>

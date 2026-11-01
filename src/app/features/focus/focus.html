@@ -4,7 +4,7 @@
   <!-- Barra superior -->
   <header class="flex items-center justify-between gap-4 px-5 md:px-8 py-4">
     <div class="flex items-center gap-2 min-w-0">
-      <i class="pi pi-stopwatch" style="color: var(--color-accent-300)"></i>
+      <i class="pi pi-stopwatch" style="color: var(--accent)"></i>
       <span class="card-kicker">Modo foco</span>
     </div>
     <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="endSession()">
@@ -28,7 +28,7 @@
         <!-- Anillo -->
         <div class="relative" style="width: min(300px, 70vw); height: min(300px, 70vw)">
           <svg viewBox="0 0 300 300" class="w-full h-full" style="transform: rotate(-90deg)">
-            <circle cx="150" cy="150" r="130" fill="none" stroke="var(--color-neutral-800)" stroke-width="8" />
+            <circle cx="150" cy="150" r="130" fill="none" stroke="var(--track)" stroke-width="8" />
             <circle cx="150" cy="150" r="130" fill="none" stroke="var(--color-accent)" stroke-width="8"
               stroke-linecap="round" [attr.stroke-dasharray]="RING" [attr.stroke-dashoffset]="ringOffset()"
               style="transition: stroke-dashoffset 0.9s linear; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent) 55%, transparent))" />
