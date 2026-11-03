@@ -85,6 +85,17 @@
               }
             </div>
 
+            @if (task.description) {
+              <p class="text-xs subtext m-0 leading-snug line-clamp-2 whitespace-pre-wrap break-words">{{ task.description }}</p>
+            }
+
+            @if (task.status === 'done' && task.closed_at) {
+              <div class="flex items-center gap-1.5 text-[11px] subtext" title="Fecha de cierre">
+                <i class="pi pi-check-circle text-[11px]"></i>
+                <span>Completada el {{ closedLabel(task) }}</span>
+              </div>
+            }
+
             @if (col.blocked && blockedBy(task).length) {
               <div class="flex items-start gap-1.5 text-[11px] leading-snug" style="color: var(--lock)">
                 <i class="pi pi-arrow-circle-right text-[11px] flex-none mt-0.5"></i>
@@ -132,6 +143,18 @@
       <input pInputText id="task-title" name="title" autocomplete="off" class="w-full" placeholder="Ej: Escribir tests de login"
         [ngModel]="form().title" (ngModelChange)="updateForm({ title: $event })" />
     </div>
+    <div class="flex flex-col gap-1">
+      <label for="task-description" class="text-sm font-medium">Descripción</label>
+      <textarea id="task-description" name="description" rows="3" class="field-input resize-none"
+        placeholder="Detalles, criterios de aceptación…"
+        [ngModel]="form().description" (ngModelChange)="updateForm({ description: $event })"></textarea>
+    </div>
+    @if (editingTask()?.closed_at) {
+      <div class="flex items-center gap-1.5 text-xs subtext -mt-1">
+        <i class="pi pi-check-circle text-xs"></i>
+        <span>Completada el {{ closedLabel(editingTask()!) }}</span>
+      </div>
+    }
     <div class="flex flex-col gap-1">
       <label for="task-status" class="text-sm font-medium">Estado</label>
       <p-select inputId="task-status" name="status" [options]="statusOptions" optionLabel="label" optionValue="value"

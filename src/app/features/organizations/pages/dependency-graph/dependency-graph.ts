@@ -105,7 +105,7 @@ export class DependencyGraph implements OnInit {
     for (const t of tasks) byId.set(Number(t.id), t);
     const ensure = (id: number, title: string) => {
       if (!byId.has(id)) {
-        byId.set(id, { id: String(id), title, status: 'pending', project_id: 0, assignee_ids: [] });
+        byId.set(id, { id: String(id), title, description: '', closed_at: null, status: 'pending', project_id: 0, assignee_ids: [] });
       }
     };
     for (const d of deps) {

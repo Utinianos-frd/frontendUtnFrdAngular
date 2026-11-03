@@ -51,6 +51,9 @@ export interface Project {
 export interface Task {
     id: string;
     title: string;
+    description: string;
+    /** Momento en que pasó a 'done' (ISO 8601); null si no está completada. Lo setea el backend. */
+    closed_at: string | null;
     status: TaskStatus;
     project_id: number;
     assignee_ids: number[];

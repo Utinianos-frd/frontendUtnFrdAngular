@@ -9,7 +9,7 @@ export interface TaskPath {
     projectId: string;
 }
 
-export type TaskChanges = Partial<Pick<Task, 'title' | 'status' | 'assignee_ids'>>;
+export type TaskChanges = Partial<Pick<Task, 'title' | 'description' | 'status' | 'assignee_ids'>>;
 
 @Injectable({ providedIn: 'root' })
 export class TasksService {

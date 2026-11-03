@@ -27,6 +27,7 @@ const COLUMNS: { status: TaskStatus; color: string }[] = [
 
 interface TaskForm {
   title: string;
+  description: string;
   status: TaskStatus;
   assignee_ids: number[];
 }
@@ -73,7 +74,7 @@ export class ProjectBoard implements OnInit {
   // Diálogo de tarea
   taskDialogOpen = signal(false);
   editingTask = signal<Task | null>(null);
-  form = signal<TaskForm>({ title: '', status: 'pending', assignee_ids: [] });
+  form = signal<TaskForm>({ title: '', description: '', status: 'pending', assignee_ids: [] });
   savingTask = signal(false);
 
   // Comentarios de la tarea en edición
@@ -199,8 +200,8 @@ export class ProjectBoard implements OnInit {
     this.editingTask.set(task);
     this.form.set(
       task
-        ? { title: task.title, status: task.status, assignee_ids: [...task.assignee_ids] }
-        : { title: '', status, assignee_ids: [] }
+        ? { title: task.title, description: task.description, status: task.status, assignee_ids: [...task.assignee_ids] }
+        : { title: '', description: '', status, assignee_ids: [] }
     );
     // Los comentarios solo existen para una tarea ya creada.
     this.comments.set([]);
@@ -219,9 +220,10 @@ export class ProjectBoard implements OnInit {
     if (!title) return;
 
     const editing = this.editingTask();
+    const fields = { title, description: form.description.trim() };
     const request = editing
-      ? this.tasksService.update(this.path, editing.id, { ...form, title })
-      : this.tasksService.create(this.path, { title, assignee_ids: form.assignee_ids });
+      ? this.tasksService.update(this.path, editing.id, { ...fields, status: form.status, assignee_ids: form.assignee_ids })
+      : this.tasksService.create(this.path, { ...fields, assignee_ids: form.assignee_ids });
 
     this.savingTask.set(true);
     request.subscribe({
@@ -310,6 +312,11 @@ export class ProjectBoard implements OnInit {
         this.feedback.error(err);
       },
     });
+  }
+
+  /** Cuándo se completó la tarea, p. ej. "2 nov, 18:00" ('' si no tiene fecha de cierre). */
+  closedLabel(task: Task): string {
+    return task.closed_at ? this.commentDate(task.closed_at) : '';
   }
 
   commentDate(iso: string): string {
