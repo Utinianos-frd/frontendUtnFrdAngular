@@ -85,6 +85,7 @@ export class ProjectBoard implements OnInit {
 
   // Diálogo de nombre del proyecto
   projectDialogOpen = signal(false);
+  projectDescription = signal('');
   savingProject = signal(false);
 
   // Modo Foco
@@ -376,10 +377,15 @@ export class ProjectBoard implements OnInit {
 
   // Proyecto
 
-  renameProject(name: string): void {
+  openProjectDialog(): void {
+    this.projectDescription.set(this.project()?.description ?? '');
+    this.projectDialogOpen.set(true);
+  }
+
+  saveProject(name: string): void {
     const { orgId, groupId, projectId } = this.path;
     this.savingProject.set(true);
-    this.projectsService.update(orgId, groupId, projectId, name).subscribe({
+    this.projectsService.update(orgId, groupId, projectId, { name, description: this.projectDescription().trim() }).subscribe({
       next: project => {
         this.project.set(project);
         this.savingProject.set(false);

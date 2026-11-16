@@ -15,6 +15,9 @@
         <span>Tablero de tareas · {{ tasks().length }} tareas</span>
       </div>
       <h1 class="text-[28px] font-medium m-0 leading-none">{{ project.name }}</h1>
+      @if (project.description) {
+        <p class="text-sm text-muted mt-2 mb-0 max-w-2xl whitespace-pre-wrap break-words">{{ project.description }}</p>
+      }
     </div>
     <div class="flex gap-2 flex-wrap">
       <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', projectId(), 'graph']" class="btn btn-secondary">
@@ -27,7 +30,7 @@
         <button type="button" class="btn btn-primary" (click)="openTaskDialog()"><i class="pi pi-plus"></i> Nueva tarea</button>
       }
       @if (isOrgOwner()) {
-        <button type="button" class="btn btn-ghost" (click)="projectDialogOpen.set(true)"><i class="pi pi-pencil"></i> Renombrar</button>
+        <button type="button" class="btn btn-ghost" (click)="openProjectDialog()"><i class="pi pi-pencil"></i> Editar</button>
         <button type="button" class="btn btn-danger" (click)="deleteProject()"><i class="pi pi-trash"></i> Eliminar</button>
       }
     </div>
@@ -216,8 +219,8 @@
   }
 </p-dialog>
 
-<app-name-dialog [(visible)]="projectDialogOpen" header="Renombrar proyecto" [initialValue]="project()?.name ?? ''"
-  [saving]="savingProject()" (save)="renameProject($event)" />
+<app-name-dialog [(visible)]="projectDialogOpen" header="Editar proyecto" [initialValue]="project()?.name ?? ''"
+  [saving]="savingProject()" (save)="saveProject($event)" [withDescription]="true" [(description)]="projectDescription" />
 
 <!-- Iniciar Modo Foco -->
 <p-dialog header="Iniciar Modo Foco" [visible]="focusDialogOpen()" (visibleChange)="focusDialogOpen.set($event)"

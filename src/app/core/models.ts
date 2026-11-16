@@ -45,6 +45,7 @@ export interface GroupMember {
 export interface Project {
     id: string;
     name: string;
+    description: string;
     group_id: number;
 }
 

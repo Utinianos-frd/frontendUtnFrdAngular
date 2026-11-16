@@ -4,8 +4,9 @@ import { DialogModule } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 
 /**
- * Diálogo con un solo campo de texto. Se usa para crear/editar
+ * Diálogo con un campo de texto. Se usa para crear/editar
  * organizaciones, grupos, proyectos y tareas (todos tienen un "nombre").
+ * Con withDescription suma un campo de descripción, enlazado con [(description)].
  */
 @Component({
   selector: 'app-name-dialog',
@@ -18,6 +19,13 @@ import { InputText } from 'primeng/inputtext';
           <input pInputText id="name-dialog-input" name="name" [(ngModel)]="value" [placeholder]="placeholder()"
             autocomplete="off" class="w-full" />
         </div>
+        @if (withDescription()) {
+          <div class="flex flex-col gap-1">
+            <label for="name-dialog-description" class="text-sm font-medium">Descripción</label>
+            <textarea id="name-dialog-description" name="description" rows="3" class="field-input resize-none"
+              placeholder="Opcional" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
+          </div>
+        }
         <div class="flex justify-end gap-2">
           <button type="button" class="btn btn-ghost" (click)="visible.set(false)">Cancelar</button>
           <button type="submit" class="btn btn-primary" [disabled]="!value().trim() || saving()">
@@ -37,6 +45,9 @@ export class NameDialog {
   /** Valor inicial al abrir el diálogo (vacío para crear, el nombre actual para editar). */
   initialValue = input('');
   saving = input(false);
+  withDescription = input(false);
+  /** Solo con withDescription; el padre la carga antes de abrir y la lee al recibir save. */
+  description = model('');
 
   save = output<string>();
 

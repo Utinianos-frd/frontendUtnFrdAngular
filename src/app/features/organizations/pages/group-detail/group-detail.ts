@@ -44,6 +44,7 @@ export class GroupDetail implements OnInit {
 
   dialogMode = signal<DialogMode>(null);
   editingProject = signal<Project | null>(null);
+  projectDescription = signal('');
   saving = signal(false);
   userToAdd = signal<number | null>(null);
   leadCandidate = signal<number | null>(null);
@@ -133,6 +134,7 @@ export class GroupDetail implements OnInit {
 
   openDialog(mode: DialogMode, project: Project | null = null): void {
     this.editingProject.set(project);
+    this.projectDescription.set(project?.description ?? '');
     this.dialogMode.set(mode);
   }
 
@@ -146,8 +148,10 @@ export class GroupDetail implements OnInit {
 
     const request: Observable<Group | Project> =
       mode === 'edit-group' ? this.groupsService.update(orgId, groupId, name) :
-      mode === 'create-project' ? this.projectsService.create(orgId, groupId, name) :
-      this.projectsService.update(orgId, groupId, this.editingProject()!.id, name);
+      mode === 'create-project' ? this.projectsService.create(orgId, groupId, name, this.projectDescription().trim()) :
+      this.projectsService.update(orgId, groupId, this.editingProject()!.id, {
+        name, description: this.projectDescription().trim(),
+      });
 
     this.saving.set(true);
     request.subscribe({

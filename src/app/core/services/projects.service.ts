@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Project } from '../models';
 import { ApiService } from './api.service';
 
+export type ProjectChanges = Partial<Pick<Project, 'name' | 'description'>>;
+
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
     private api = inject(ApiService);
@@ -19,12 +21,12 @@ export class ProjectsService {
         return this.api.get<Project>(`${this.base(orgId, groupId)}${projectId}`);
     }
 
-    create(orgId: string, groupId: string, name: string): Observable<Project> {
-        return this.api.create<Project>(this.base(orgId, groupId), 'projects', { name });
+    create(orgId: string, groupId: string, name: string, description = ''): Observable<Project> {
+        return this.api.create<Project>(this.base(orgId, groupId), 'projects', { name, description });
     }
 
-    update(orgId: string, groupId: string, projectId: string, name: string): Observable<Project> {
-        return this.api.update<Project>(`${this.base(orgId, groupId)}${projectId}`, 'projects', { name });
+    update(orgId: string, groupId: string, projectId: string, changes: ProjectChanges): Observable<Project> {
+        return this.api.update<Project>(`${this.base(orgId, groupId)}${projectId}`, 'projects', changes);
     }
 
     delete(orgId: string, groupId: string, projectId: string): Observable<void> {

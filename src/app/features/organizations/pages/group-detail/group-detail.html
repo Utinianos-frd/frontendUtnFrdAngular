@@ -61,6 +61,9 @@
                 </div>
               }
             </div>
+            @if (project.description) {
+              <p class="text-[13px] text-muted m-0 leading-snug line-clamp-2 whitespace-pre-wrap break-words">{{ project.description }}</p>
+            }
             <a [routerLink]="['/organizations', orgId(), 'groups', groupId(), 'projects', project.id]"
               class="mt-auto text-xs font-semibold" style="color: var(--accent)">Ver tablero →</a>
           </div>
@@ -175,4 +178,5 @@
 }
 
 <app-name-dialog [visible]="dialogMode() !== null" (visibleChange)="onDialogVisibleChange($event)" [header]="dialogHeader()"
-  [initialValue]="dialogInitial()" [saving]="saving()" (save)="onDialogSave($event)" />
+  [initialValue]="dialogInitial()" [saving]="saving()" (save)="onDialogSave($event)"
+  [withDescription]="dialogMode() === 'create-project' || dialogMode() === 'edit-project'" [(description)]="projectDescription" />
