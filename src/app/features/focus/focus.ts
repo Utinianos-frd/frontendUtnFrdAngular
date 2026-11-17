@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
 import { interval, Subscription } from 'rxjs';
 import { FocusSessionSummary, Pomodoro } from '../../core/models';
 import { FocusSessionService, FocusTaskRef } from '../../core/services/focus-session.service';
@@ -9,7 +10,7 @@ import { Feedback } from '../../shared/ui/feedback';
 /** Pantalla de concentración: timer Pomodoro contra las tareas elegidas (RF-48/52/53). */
 @Component({
   selector: 'app-focus',
-  imports: [],
+  imports: [ToastModule],
   templateUrl: './focus.html',
 })
 export class Focus implements OnInit, OnDestroy {
