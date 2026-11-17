@@ -3,7 +3,7 @@
     <h1 class="text-[28px] font-medium m-0 leading-none">Carga de trabajo</h1>
     <p class="text-muted text-[13px] mt-2 mb-0">
       Tareas activas (sin completar) de cada miembro, sumando todos sus grupos.
-      @if (threshold()) { Sobrecarga a partir de {{ threshold() }} tareas activas. }
+      @if (threshold()) { Sobrecarga a partir de {{ threshold() | plural:'tarea activa':'tareas activas' }}. }
     </p>
   </div>
 
@@ -37,7 +37,7 @@
         <span class="section-label subtext">Miembros</span>
       </div>
       <div class="text-[32px] font-medium leading-none">{{ summary().total }}</div>
-      <div class="text-xs text-muted">{{ summary().tasks }} tareas activas</div>
+      <div class="text-xs text-muted">{{ summary().tasks | plural:'tarea activa':'tareas activas' }}</div>
     </div>
     <div class="card p-4 flex flex-col gap-2">
       <div class="flex items-center gap-1.5">
@@ -84,7 +84,7 @@
             <span class="text-xs subtext">{{ roleLabels[m.group_role] }}</span>
             <span>{{ m.active_task_count }}</span>
             <span class="h-1.5 rounded-full overflow-hidden" style="background: var(--track)"
-              [title]="m.active_task_count + ' de ' + threshold() + ' tareas'">
+              [title]="m.active_task_count + ' de ' + (threshold() | plural:'tarea')">
               <span class="block h-full rounded-full transition-all" [style.width.%]="loadPct(m)" [style.background]="statusColors[m.status]"></span>
             </span>
             <span class="tag w-fit" [style.background]="'color-mix(in srgb, ' + statusColors[m.status] + ' 18%, transparent)'"
@@ -137,14 +137,17 @@
       </p>
       <form class="flex gap-2 items-center" (ngSubmit)="saveThreshold()">
         <input type="number" min="1" name="threshold" class="field-input !w-28" [ngModel]="thresholdDraft()"
-          (ngModelChange)="thresholdDraft.set($event)" />
+          (ngModelChange)="thresholdDraft.set($event)" (blur)="thresholdTouched.set(true)" />
         <span class="text-sm subtext">tareas</span>
         <button type="submit" class="btn btn-primary ml-auto"
-          [disabled]="savingThreshold() || !thresholdDraft() || thresholdDraft()! < 1 || thresholdDraft() === threshold()">
+          [disabled]="savingThreshold() || thresholdInvalid() || thresholdDraft() === threshold()">
           @if (savingThreshold()) { <i class="pi pi-spin pi-spinner"></i> }
           Guardar
         </button>
       </form>
+      @if (thresholdTouched() && thresholdInvalid()) {
+        <small class="text-red-500 block mt-2">Ingresá un número mayor a 0</small>
+      }
     </section>
   }
 }

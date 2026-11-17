@@ -28,6 +28,20 @@ export class Shell implements OnInit {
   initials = computed(() => this.username().slice(0, 2).toUpperCase() || '?');
   avatarUrl = computed(() => this.authService.currentUser()?.avatar_url ?? '');
 
+  /**
+   * Flags de funciones todavía no implementadas. Poné en true para reactivar los botones
+   * de Buscar y Notificaciones del header cuando existan sus pantallas.
+   */
+  readonly features = { search: false, notifications: false };
+
+  /** Saludo según la hora local: mañana / tarde / noche. */
+  readonly greeting = (() => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 13) return 'Buen día';
+    if (h >= 13 && h < 20) return 'Buenas tardes';
+    return 'Buenas noches';
+  })();
+
   // Tema: oscuro por defecto. La clase .app-dark se aplica también en index.html
   // antes de renderizar; acá la mantenemos sincronizada con la preferencia guardada.
   dark = signal(localStorage.getItem(THEME_KEY) !== 'light');

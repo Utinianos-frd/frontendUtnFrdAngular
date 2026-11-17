@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Comment, DependencyType, Task, TaskDependency } from '../models';
-import { ApiService } from './api.service';
+import { ApiResult, ApiService } from './api.service';
 
 export interface TaskPath {
     orgId: string;
@@ -23,12 +23,14 @@ export class TasksService {
         return this.api.list<Task>(this.base(path));
     }
 
-    create(path: TaskPath, changes: TaskChanges & { title: string }): Observable<Task> {
-        return this.api.create<Task>(this.base(path), 'tasks', changes);
+    /** Devuelve `meta` además de la tarea: puede traer `warnings` (p. ej. sobrecarga). */
+    create(path: TaskPath, changes: TaskChanges & { title: string }): Observable<ApiResult<Task>> {
+        return this.api.createMeta<Task>(this.base(path), 'tasks', changes);
     }
 
-    update(path: TaskPath, taskId: string, changes: TaskChanges): Observable<Task> {
-        return this.api.update<Task>(`${this.base(path)}${taskId}`, 'tasks', changes);
+    /** Devuelve `meta` además de la tarea: al cambiar asignados puede traer `warnings`. */
+    update(path: TaskPath, taskId: string, changes: TaskChanges): Observable<ApiResult<Task>> {
+        return this.api.updateMeta<Task>(`${this.base(path)}${taskId}`, 'tasks', changes);
     }
 
     delete(path: TaskPath, taskId: string): Observable<void> {

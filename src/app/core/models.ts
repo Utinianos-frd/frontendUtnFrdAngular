@@ -62,6 +62,19 @@ export interface Task {
     blocked?: boolean;
 }
 
+/**
+ * Aviso (no error) que la API puede devolver en `meta.warnings` al asignar una tarea,
+ * p. ej. cuando un miembro queda sobrecargado. No frena la operación.
+ */
+export interface AssignmentWarning {
+    user_id: number;
+    username: string;
+    active_task_count: number;
+    detail: string;
+    /** Usuarios sugeridos como alternativa (strings o { username }). */
+    suggested_alternatives?: (string | { username: string })[];
+}
+
 /** FS: finish-to-start · FF: finish-to-finish. */
 export type DependencyType = 'FS' | 'FF';
 
@@ -189,14 +202,14 @@ export const WORKLOAD_STATUS_COLORS: Record<WorkloadStatus, string> = {
 };
 
 export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
-    owner: 'Owner',
-    admin: 'Admin',
+    owner: 'Dueño',
+    admin: 'Administrador',
     member: 'Miembro',
 };
 
 export const GROUP_ROLE_LABELS: Record<GroupRole, string> = {
-    group_lead: 'Group lead',
-    contributor: 'Contributor',
+    group_lead: 'Líder',
+    contributor: 'Colaborador',
 };
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {

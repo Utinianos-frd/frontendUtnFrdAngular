@@ -25,11 +25,15 @@
         <button type="button" class="icon-btn rounded-[10px]" [title]="dark() ? 'Modo claro' : 'Modo oscuro'" (click)="toggleTheme()">
           <i class="pi" [class]="dark() ? 'pi-sun' : 'pi-moon'"></i>
         </button>
-        <button type="button" class="icon-btn rounded-[10px]" title="Buscar"><i class="pi pi-search"></i></button>
-        <button type="button" class="icon-btn rounded-[10px] relative" title="Notificaciones">
-          <i class="pi pi-bell"></i>
-          <span class="absolute top-2 right-2 w-[7px] h-[7px] rounded-full" style="background: var(--accent)"></span>
-        </button>
+        @if (features.search) {
+          <button type="button" class="icon-btn rounded-[10px]" title="Buscar"><i class="pi pi-search"></i></button>
+        }
+        @if (features.notifications) {
+          <button type="button" class="icon-btn rounded-[10px] relative" title="Notificaciones">
+            <i class="pi pi-bell"></i>
+            <span class="absolute top-2 right-2 w-[7px] h-[7px] rounded-full" style="background: var(--accent)"></span>
+          </button>
+        }
         <span class="md:hidden">
           <button type="button" class="icon-btn rounded-[10px]" [title]="menuOpen() ? 'Cerrar menú' : 'Menú'" (click)="toggleMenu()">
             <i class="pi" [class]="menuOpen() ? 'pi-times' : 'pi-bars'"></i>
@@ -66,7 +70,7 @@
           }
         </div>
         <div class="min-w-0 flex-1">
-          <div class="text-base font-medium leading-tight truncate">Buen día{{ username() ? ', ' + username() : '' }}</div>
+          <div class="text-base font-medium leading-tight truncate">{{ greeting }}{{ username() ? ', ' + username() : '' }}</div>
           <div class="text-xs subtext truncate">{{ todayLabel }}</div>
         </div>
       </a>

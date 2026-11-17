@@ -17,7 +17,12 @@ import { InputText } from 'primeng/inputtext';
         <div class="flex flex-col gap-1">
           <label for="name-dialog-input" class="text-sm font-medium">{{ label() }}</label>
           <input pInputText id="name-dialog-input" name="name" [(ngModel)]="value" [placeholder]="placeholder()"
-            autocomplete="off" class="w-full" />
+            autocomplete="off" class="w-full" maxlength="255" (blur)="touched.set(true)" />
+          @if (touched() && !value().trim()) {
+            <small class="text-red-500">El nombre es obligatorio</small>
+          } @else if (value().length >= 255) {
+            <small class="subtext">Llegaste al máximo de 255 caracteres.</small>
+          }
         </div>
         @if (withDescription()) {
           <div class="flex flex-col gap-1">
@@ -52,16 +57,24 @@ export class NameDialog {
   save = output<string>();
 
   value = signal('');
+  touched = signal(false);
 
   constructor() {
-    // Cada vez que se abre, carga el valor inicial.
+    // Cada vez que se abre, carga el valor inicial y resetea el estado "tocado".
     effect(() => {
-      if (this.visible()) this.value.set(this.initialValue());
+      if (this.visible()) {
+        this.value.set(this.initialValue());
+        this.touched.set(false);
+      }
     });
   }
 
   submit(): void {
     const name = this.value().trim();
-    if (name) this.save.emit(name);
+    if (!name) {
+      this.touched.set(true);
+      return;
+    }
+    this.save.emit(name);
   }
 }

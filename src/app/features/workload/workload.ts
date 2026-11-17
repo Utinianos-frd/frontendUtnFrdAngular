@@ -13,12 +13,13 @@ import { OrganizationsService } from '../../core/services/organizations.service'
 import { ProjectsService } from '../../core/services/projects.service';
 import { WorkloadService } from '../../core/services/workload.service';
 import { Feedback } from '../../shared/ui/feedback';
+import { PluralPipe } from '../../shared/pipes/plural.pipe';
 
 const STATUS_ORDER: WorkloadStatus[] = ['overloaded', 'busy', 'available'];
 
 @Component({
   selector: 'app-workload',
-  imports: [RouterLink, FormsModule, SelectModule],
+  imports: [RouterLink, FormsModule, SelectModule, PluralPipe],
   templateUrl: './workload.html',
 })
 export class Workload implements OnInit {
@@ -56,6 +57,13 @@ export class Workload implements OnInit {
   // Umbral de sobrecarga
   thresholdDraft = signal<number | null>(null);
   savingThreshold = signal(false);
+  thresholdTouched = signal(false);
+
+  /** El umbral válido es un entero ≥ 1. */
+  thresholdInvalid = computed(() => {
+    const v = this.thresholdDraft();
+    return v == null || v < 1;
+  });
 
   selectedOrg = computed(() => this.organizations().find(o => o.id === this.org()) ?? null);
   selectedGroup = computed(() => this.groups().find(g => g.id === this.group()) ?? null);

@@ -7,7 +7,7 @@ import { InputText } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import {
-  Comment, Group, GroupMember, Organization, Project, Task, TaskDependency, TaskStatus, TASK_STATUS_LABELS,
+  AssignmentWarning, Comment, Group, GroupMember, Organization, Project, Task, TaskDependency, TaskStatus, TASK_STATUS_LABELS,
 } from '../../../../core/models';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FocusSessionService, FocusTaskRef } from '../../../../core/services/focus-session.service';
@@ -17,6 +17,7 @@ import { ProjectsService } from '../../../../core/services/projects.service';
 import { TaskPath, TasksService } from '../../../../core/services/tasks.service';
 import { Feedback } from '../../../../shared/ui/feedback';
 import { NameDialog } from '../../../../shared/ui/name-dialog';
+import { PluralPipe } from '../../../../shared/pipes/plural.pipe';
 
 // El color es el "punto" de la columna, al estilo del mockup Nocturne.
 const COLUMNS: { status: TaskStatus; color: string }[] = [
@@ -43,7 +44,7 @@ interface BoardColumn {
 
 @Component({
   selector: 'app-project-board',
-  imports: [RouterLink, FormsModule, DragDropModule, DialogModule, InputText, SelectModule, MultiSelectModule, NameDialog],
+  imports: [RouterLink, FormsModule, DragDropModule, DialogModule, InputText, SelectModule, MultiSelectModule, NameDialog, PluralPipe],
   templateUrl: './project-board.html',
 })
 export class ProjectBoard implements OnInit {
@@ -76,6 +77,7 @@ export class ProjectBoard implements OnInit {
   editingTask = signal<Task | null>(null);
   form = signal<TaskForm>({ title: '', description: '', status: 'pending', assignee_ids: [] });
   savingTask = signal(false);
+  titleTouched = signal(false);
 
   // Comentarios de la tarea en edición
   comments = signal<Comment[]>([]);
@@ -207,6 +209,7 @@ export class ProjectBoard implements OnInit {
     // Los comentarios solo existen para una tarea ya creada.
     this.comments.set([]);
     this.newComment.set('');
+    this.titleTouched.set(false);
     if (task) this.loadComments(task);
     this.taskDialogOpen.set(true);
   }
@@ -218,7 +221,10 @@ export class ProjectBoard implements OnInit {
   saveTask(): void {
     const form = this.form();
     const title = form.title.trim();
-    if (!title) return;
+    if (!title) {
+      this.titleTouched.set(true);
+      return;
+    }
 
     const editing = this.editingTask();
     const fields = { title, description: form.description.trim() };
@@ -228,7 +234,7 @@ export class ProjectBoard implements OnInit {
 
     this.savingTask.set(true);
     request.subscribe({
-      next: saved => {
+      next: ({ data: saved, meta }) => {
         // Al crear, el backend ignora el estado y la deja "pending"; si se eligió otro, lo actualizamos.
         if (!editing && form.status !== saved.status) {
           this.tasksService.update(this.path, saved.id, { status: form.status }).subscribe({
@@ -240,12 +246,25 @@ export class ProjectBoard implements OnInit {
         this.taskDialogOpen.set(false);
         this.loadTasks();
         this.feedback.success(editing ? 'Tarea actualizada' : 'Tarea creada');
+        this.showWarnings(meta);
       },
       error: err => {
         this.savingTask.set(false);
         this.feedback.error(err);
       },
     });
+  }
+
+  /** Muestra un toast de aviso por cada warning de sobrecarga que devuelva la API en `meta`. */
+  private showWarnings(meta: Record<string, unknown> | undefined): void {
+    const warnings = (meta?.['warnings'] as AssignmentWarning[] | undefined) ?? [];
+    for (const w of warnings) {
+      const alternatives = (w.suggested_alternatives ?? [])
+        .map(a => (typeof a === 'string' ? a : a.username))
+        .filter(Boolean);
+      const extra = alternatives.length ? ` Podrías asignarla a: ${alternatives.join(', ')}.` : '';
+      this.feedback.warn(`${w.detail}${extra}`);
+    }
   }
 
   changeStatus(task: Task, status: TaskStatus): void {

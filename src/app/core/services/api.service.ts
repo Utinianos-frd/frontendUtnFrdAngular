@@ -40,6 +40,13 @@ export class ApiService {
             .pipe(map(res => flatten<T>(res.data)));
     }
 
+    /** GET que tolera `data: null` (p. ej. "sesión activa" cuando no hay ninguna). */
+    getNullable<T>(path: string): Observable<T | null> {
+        return this.http
+            .get<{ data: JsonApiResource | null }>(`${API_URL}/${path}`)
+            .pipe(map(res => (res.data ? flatten<T>(res.data) : null)));
+    }
+
     create<T>(path: string, type: string, attributes: object): Observable<T> {
         return this.http
             .post<{ data: JsonApiResource }>(`${API_URL}/${path}`, { data: { type, attributes } })
@@ -68,6 +75,13 @@ export class ApiService {
             .pipe(map(res => flatten<T>(res.data)));
     }
 
+    /** POST que conserva `meta` además del recurso (p. ej. avisos de sobrecarga al crear una tarea). */
+    createMeta<T>(path: string, type: string, attributes: object): Observable<ApiResult<T>> {
+        return this.http
+            .post<{ data: JsonApiResource; meta?: Record<string, unknown> }>(`${API_URL}/${path}`, { data: { type, attributes } })
+            .pipe(map(res => ({ data: flatten<T>(res.data), meta: res.meta })));
+    }
+
     /** PATCH que conserva `meta` además del recurso. */
     updateMeta<T>(path: string, type: string, attributes: object): Observable<ApiResult<T>> {
         return this.http
@@ -80,11 +94,9 @@ export class ApiService {
 export function apiErrorMessage(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
         if (err.status === 0) return 'No se pudo conectar con el servidor';
+        // Mostramos solo el mensaje, sin el prefijo técnico del campo ("token: …", "name: …").
         const first = err.error?.errors?.[0];
-        if (first?.detail) {
-            const field = first.source?.pointer?.split('/').pop();
-            return field && field !== 'attributes' ? `${field}: ${first.detail}` : first.detail;
-        }
+        if (first?.detail) return first.detail;
         return `Error ${err.status}`;
     }
     return 'Ocurrió un error inesperado';

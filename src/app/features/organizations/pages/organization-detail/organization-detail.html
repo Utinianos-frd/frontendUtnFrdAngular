@@ -19,7 +19,7 @@
       <div class="min-w-0">
         <h1 class="text-[28px] font-medium m-0 leading-none truncate">{{ org.name }}</h1>
         <p class="text-muted text-[13px] mt-2 mb-0">
-          Plan {{ org.plan }} · {{ members().length }} miembros · {{ groups().length }} grupos · Tu rol: {{ roleLabels[org.role] }}
+          Plan {{ org.plan }} · {{ members().length | plural:'miembro' }} · {{ groups().length | plural:'grupo' }} · Tu rol: {{ roleLabels[org.role] }}
         </p>
       </div>
     </div>

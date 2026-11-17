@@ -21,7 +21,12 @@ export interface OrgDialogResult {
         <div class="flex flex-col gap-1">
           <label for="org-dialog-name" class="text-sm font-medium">Nombre</label>
           <input pInputText id="org-dialog-name" name="name" [(ngModel)]="name" placeholder="Ej: NORTE Studio"
-            autocomplete="off" class="w-full" />
+            autocomplete="off" class="w-full" maxlength="255" (blur)="touched.set(true)" />
+          @if (touched() && !name().trim()) {
+            <small class="text-red-500">El nombre es obligatorio</small>
+          } @else if (name().length >= 255) {
+            <small class="subtext">Llegaste al máximo de 255 caracteres.</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1">
@@ -72,6 +77,7 @@ export class OrgDialog {
   name = signal('');
   logoUrl = signal('');
   imageError = signal(false);
+  touched = signal(false);
 
   constructor() {
     // Cada vez que se abre, carga los valores iniciales.
@@ -80,6 +86,7 @@ export class OrgDialog {
         this.name.set(this.initialName());
         this.logoUrl.set(this.initialLogoUrl());
         this.imageError.set(false);
+        this.touched.set(false);
       }
     });
     // Al cambiar la URL, vuelve a intentar cargar la imagen.
@@ -91,6 +98,10 @@ export class OrgDialog {
 
   submit(): void {
     const name = this.name().trim();
-    if (name) this.save.emit({ name, logoUrl: this.logoUrl().trim() });
+    if (!name) {
+      this.touched.set(true);
+      return;
+    }
+    this.save.emit({ name, logoUrl: this.logoUrl().trim() });
   }
 }

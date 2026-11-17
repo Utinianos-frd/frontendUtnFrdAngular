@@ -12,6 +12,7 @@ import { OrganizationsService } from '../../../../core/services/organizations.se
 import { ProjectsService } from '../../../../core/services/projects.service';
 import { Feedback } from '../../../../shared/ui/feedback';
 import { NameDialog } from '../../../../shared/ui/name-dialog';
+import { PluralPipe } from '../../../../shared/pipes/plural.pipe';
 
 type DialogMode = 'edit-group' | 'create-project' | 'edit-project' | null;
 
@@ -19,7 +20,7 @@ const PROJECT_COLORS = ['#008A00', '#AA00FF', '#00ABA9', '#D80073', '#F0A30A', '
 
 @Component({
   selector: 'app-group-detail',
-  imports: [RouterLink, FormsModule, SelectModule, NameDialog],
+  imports: [RouterLink, FormsModule, SelectModule, NameDialog, PluralPipe],
   templateUrl: './group-detail.html',
 })
 export class GroupDetail implements OnInit {
@@ -243,7 +244,7 @@ export class GroupDetail implements OnInit {
     };
 
     if (current) {
-      this.feedback.confirm(`¿Hacer líder a ${username}? ${current.username} pasará a ser contributor.`, doAssign);
+      this.feedback.confirm(`¿Hacer líder a ${username}? ${current.username} pasará a ser Colaborador.`, doAssign);
     } else {
       doAssign();
     }

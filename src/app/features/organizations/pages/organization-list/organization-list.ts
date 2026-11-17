@@ -59,10 +59,16 @@ export class OrganizationList implements OnInit {
     });
   }
 
+  /** El código de invitación es un UUID; lo aceptamos solo o dentro de un link. */
+  private readonly UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
   join(): void {
-    // Acepta tanto el token solo como un link que lo contenga al final.
-    const token = this.joinToken().trim().split('/').pop() ?? '';
-    if (!token) return;
+    // Validamos en el front: buscamos un UUID en lo pegado (token suelto o link que lo contenga).
+    const token = this.joinToken().trim().match(this.UUID_RE)?.[0];
+    if (!token) {
+      this.feedback.error('El código de invitación no es válido');
+      return;
+    }
 
     this.joining.set(true);
     this.orgs.join(token).subscribe({

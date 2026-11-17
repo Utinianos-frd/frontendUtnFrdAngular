@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { Dashboard, WorkloadStatus } from '../../core/models';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { Feedback } from '../../shared/ui/feedback';
+import { PluralPipe } from '../../shared/pipes/plural.pipe';
 
 /** Pantalla "Inicio": panel con datos reales del usuario (GET /dashboard). */
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, PluralPipe],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {

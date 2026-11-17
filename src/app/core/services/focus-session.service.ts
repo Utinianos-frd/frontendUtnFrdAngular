@@ -30,12 +30,15 @@ export class FocusSessionService {
   readonly activeSession = signal<FocusSession | null>(null);
   readonly taskRefs = signal<FocusTaskRef[]>([]);
 
-  /** Consulta la sesión activa (404 → no hay). Se llama al arrancar la app. */
+  /**
+   * Consulta la sesión activa. El backend devuelve `data: null` (200) cuando no hay ninguna;
+   * también toleramos un error (p. ej. 404 de versiones anteriores) como "sin sesión".
+   */
   loadActive(): Observable<FocusSession | null> {
-    return this.api.get<FocusSession>(`${BASE}/active`).pipe(
+    return this.api.getNullable<FocusSession>(`${BASE}/active`).pipe(
       tap(session => {
         this.activeSession.set(session);
-        this.taskRefs.set(this.restoreRefs(session));
+        this.taskRefs.set(session ? this.restoreRefs(session) : []);
       }),
       catchError(() => {
         this.activeSession.set(null);

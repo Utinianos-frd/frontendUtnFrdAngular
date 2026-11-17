@@ -10,12 +10,13 @@ import { OrganizationsService } from '../../../../core/services/organizations.se
 import { Feedback } from '../../../../shared/ui/feedback';
 import { NameDialog } from '../../../../shared/ui/name-dialog';
 import { OrgDialog, OrgDialogResult } from '../../../../shared/ui/org-dialog';
+import { PluralPipe } from '../../../../shared/pipes/plural.pipe';
 
 type DialogMode = 'edit-org' | 'create-group' | 'edit-group' | null;
 
 @Component({
   selector: 'app-organization-detail',
-  imports: [RouterLink, FormsModule, SelectModule, NameDialog, OrgDialog],
+  imports: [RouterLink, FormsModule, SelectModule, NameDialog, OrgDialog, PluralPipe],
   templateUrl: './organization-detail.html',
 })
 export class OrganizationDetail implements OnInit {

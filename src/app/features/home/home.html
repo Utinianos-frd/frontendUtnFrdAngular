@@ -18,7 +18,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium truncate">{{ g.name }}</div>
-              <div class="text-xs text-muted truncate">Lead: {{ g.lead }} · {{ g.projects }} proyectos · {{ g.members }} miembros</div>
+              <div class="text-xs text-muted truncate">Líder: {{ g.lead }} · {{ g.projects | plural:'proyecto' }} · {{ g.members | plural:'miembro' }}</div>
             </div>
             <span class="tag flex-none" [style.background]="'color-mix(in srgb, ' + loadColor(g.load) + ' 18%, transparent)'"
               [style.color]="loadColor(g.load)">{{ g.load }}</span>
@@ -37,7 +37,7 @@
       </div>
       <div>
         <div class="text-[44px] font-medium leading-none tracking-tight">{{ d.members_total }}</div>
-        <div class="text-xs text-muted mt-1.5">en {{ d.groups_total }} grupos</div>
+        <div class="text-xs text-muted mt-1.5">en {{ d.groups_total | plural:'grupo' }}</div>
       </div>
     </section>
 
