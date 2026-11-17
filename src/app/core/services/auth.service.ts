@@ -66,6 +66,20 @@ export class AuthService {
         );
     }
 
+    /**
+     * Inicia sesión con el ID token que devuelve Google Identity Services.
+     * El backend valida el token, crea la cuenta si no existía, y devuelve tokens JWT.
+     */
+    loginWithGoogle(idToken: string): Observable<void> {
+        const body = { data: { type: 'sessions', attributes: { id_token: idToken } } };
+
+        return this.http.post<any>(`${API_URL}/auth/google`, body).pipe(
+            map(res => extractTokens(res)),
+            tap(tokens => this.saveTokens(tokens)),
+            map(() => undefined)
+        );
+    }
+
     private saveTokens(tokens: Tokens): void {
         localStorage.setItem(TOKEN_KEY, tokens.access);
         if (tokens.refresh) localStorage.setItem(REFRESH_KEY, tokens.refresh);

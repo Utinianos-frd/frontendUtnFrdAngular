@@ -68,4 +68,12 @@
       <a routerLink="/auth/login" class="font-medium" style="color: var(--accent)">Iniciá sesión</a>
     </p>
   </form>
+
+  <!-- Separador -->
+  <p-divider>
+    <span class="text-sm subtext px-2">o registrate con</span>
+  </p-divider>
+
+  <!-- Botón Google (Google Identity Services) -->
+  <app-google-button text="signup_with" (credential)="onGoogleCredential($event)" />
 </div>

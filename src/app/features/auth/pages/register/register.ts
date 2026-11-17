@@ -4,6 +4,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { Router, RouterLink } from '@angular/router';
 import { PRIMENG_MODULES } from '../../../../shared/primeng/primeng';
 import { AuthService } from '../../../../core/services/auth.service';
+import { GoogleButton } from '../../components/google-button';
 
 type Field = 'username' | 'email' | 'password';
 
@@ -15,7 +16,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-register',
-  imports: [PRIMENG_MODULES, ReactiveFormsModule, RouterLink],
+  imports: [PRIMENG_MODULES, ReactiveFormsModule, RouterLink, GoogleButton],
   templateUrl: './register.html',
 })
 export class Register {
@@ -68,6 +69,24 @@ export class Register {
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
         this.handleError(err);
+      },
+    });
+  }
+
+  /** Callback del botón de Google: registra/inicia sesión con la cuenta de Google. */
+  onGoogleCredential(idToken: string): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+    this.serverErrors.set({});
+
+    this.authService.loginWithGoogle(idToken).subscribe({
+      next: () => this.router.navigate(['/organizations']),
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(
+          err.error?.errors?.[0]?.detail ??
+          (err.status === 0 ? 'No se pudo conectar con el servidor' : 'No se pudo registrar con Google')
+        );
       },
     });
   }

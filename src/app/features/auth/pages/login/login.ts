@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PRIMENG_MODULES } from '../../../../shared/primeng/primeng';
 import { AuthService } from '../../../../core/services/auth.service';
+import { GoogleButton } from '../../components/google-button';
 
 @Component({
   selector: 'app-login',
-  imports: [PRIMENG_MODULES, ReactiveFormsModule, RouterLink],
+  imports: [PRIMENG_MODULES, ReactiveFormsModule, RouterLink, GoogleButton],
   templateUrl: './login.html',
   styles: ``,
 })
@@ -40,6 +41,23 @@ export class Login {
         this.errorMessage.set(
           err.error?.errors?.[0]?.detail ??
           (err.status === 0 ? 'No se pudo conectar con el servidor' : 'Error al iniciar sesión')
+        );
+      },
+    });
+  }
+
+  /** Callback del botón de Google: cambia el ID token por una sesión JWT. */
+  onGoogleCredential(idToken: string): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    this.authService.loginWithGoogle(idToken).subscribe({
+      next: () => this.router.navigate(['/home']),
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(
+          err.error?.errors?.[0]?.detail ??
+          (err.status === 0 ? 'No se pudo conectar con el servidor' : 'No se pudo iniciar sesión con Google')
         );
       },
     });
