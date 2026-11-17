@@ -278,6 +278,8 @@ export class ProjectBoard implements OnInit {
     // Actualización optimista: movemos la tarjeta y revertimos si falla.
     this.tasks.update(list => list.map(t => (t.id === task.id ? { ...t, status } : t)));
     this.tasksService.update(this.path, task.id, { status }).subscribe({
+      // Recargamos para recalcular el estado "bloqueada" de las tareas que dependen de esta.
+      next: () => this.loadTasks(),
       error: err => {
         this.tasks.update(list => list.map(t => (t.id === task.id ? { ...t, status: task.status } : t)));
         this.feedback.error(err);
