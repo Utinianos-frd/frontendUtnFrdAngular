@@ -10,7 +10,7 @@ import {
   AssignmentWarning, Comment, Group, GroupMember, Organization, Project, Task, TaskDependency, TaskStatus, TASK_STATUS_LABELS,
 } from '../../../../core/models';
 import { AuthService } from '../../../../core/services/auth.service';
-import { FocusSessionService, FocusTaskRef } from '../../../../core/services/focus-session.service';
+import { FocusSessionService } from '../../../../core/services/focus-session.service';
 import { GroupsService } from '../../../../core/services/groups.service';
 import { OrganizationsService } from '../../../../core/services/organizations.service';
 import { ProjectsService } from '../../../../core/services/projects.service';
@@ -108,8 +108,14 @@ export class ProjectBoard implements OnInit {
     const me = this.currentUserId();
     return me == null ? [] : this.tasks().filter(t => t.assignee_ids.includes(me));
   });
-  canFocus = computed(() => this.org()?.plan === 'pro' && this.myTasks().length > 0);
-  myTaskOptions = computed(() => this.myTasks().map(t => ({ value: Number(t.id), label: t.title })));
+  // Tareas mías que todavía se pueden enfocar (sin completar). Las bloqueadas se muestran deshabilitadas.
+  private focusableTasks = computed(() => this.myTasks().filter(t => t.status !== 'done'));
+  canFocus = computed(() => this.org()?.plan === 'pro' && this.focusableTasks().length > 0);
+  myTaskOptions = computed(() => this.focusableTasks().map(t => ({
+    value: Number(t.id),
+    label: t.blocked ? `${t.title} — Bloqueada por otra tarea` : t.title,
+    disabled: !!t.blocked,
+  })));
 
   /** El group lead mueve cualquier tarea; un contributor, solo las que tiene asignadas. */
   canChangeStatus(task: Task): boolean {
@@ -363,19 +369,8 @@ export class ProjectBoard implements OnInit {
     const ids = this.focusTaskIds();
     if (!goal || !ids.length) return;
 
-    const refs: FocusTaskRef[] = ids.map(id => {
-      const task = this.myTasks().find(t => Number(t.id) === id);
-      return {
-        id,
-        title: task?.title ?? `Tarea #${id}`,
-        orgId: this.orgId(),
-        groupId: this.groupId(),
-        projectId: this.projectId(),
-      };
-    });
-
     this.startingFocus.set(true);
-    this.focus.start(goal, refs).subscribe({
+    this.focus.start(goal, ids).subscribe({
       next: () => {
         this.startingFocus.set(false);
         this.focusDialogOpen.set(false);

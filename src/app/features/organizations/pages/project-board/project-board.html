@@ -212,8 +212,13 @@
 
       @if (canChangeStatus(task)) {
         <form class="flex gap-2 items-start" (ngSubmit)="postComment()">
-          <textarea name="newComment" rows="1" placeholder="Escribí un comentario…"
-            class="field-input flex-1 resize-none" [ngModel]="newComment()" (ngModelChange)="newComment.set($event)"></textarea>
+          <div class="flex-1 min-w-0 flex flex-col gap-1">
+            <textarea name="newComment" rows="1" placeholder="Escribí un comentario…" maxlength="2000"
+              class="field-input resize-none" [ngModel]="newComment()" (ngModelChange)="newComment.set($event)"></textarea>
+            <span class="text-[11px] subtext self-end" [class.text-red-500]="newComment().length >= 2000">
+              {{ newComment().length }}/2000
+            </span>
+          </div>
           <button type="submit" class="btn btn-primary flex-none" [disabled]="!newComment().trim() || postingComment()">
             @if (postingComment()) { <i class="pi pi-spin pi-spinner"></i> } @else { <i class="pi pi-send"></i> }
             Comentar
@@ -233,13 +238,13 @@
   <form (ngSubmit)="startFocus()" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label for="focus-goal" class="text-sm font-medium">¿Qué querés lograr en esta sesión?</label>
-      <input pInputText id="focus-goal" name="goal" autocomplete="off" class="w-full"
+      <input pInputText id="focus-goal" name="goal" autocomplete="off" class="w-full" maxlength="200"
         placeholder="Ej: Terminar el endpoint de login" [ngModel]="focusGoal()" (ngModelChange)="focusGoal.set($event)" />
     </div>
     <div class="flex flex-col gap-1">
       <label for="focus-tasks" class="text-sm font-medium">Tus tareas para esta sesión</label>
       <p-multiselect inputId="focus-tasks" name="tasks" [options]="myTaskOptions()" optionLabel="label" optionValue="value"
-        placeholder="Elegí al menos una" display="chip" [ngModel]="focusTaskIds()"
+        optionDisabled="disabled" placeholder="Elegí al menos una" display="chip" [ngModel]="focusTaskIds()"
         (ngModelChange)="focusTaskIds.set($event)" appendTo="body" />
       <small class="subtext">Solo podés incluir tareas que te estén asignadas.</small>
     </div>

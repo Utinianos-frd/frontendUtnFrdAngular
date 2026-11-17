@@ -162,11 +162,35 @@ export interface Dashboard {
 export type FocusSessionStatus = 'active' | 'ended';
 export type PomodoroStatus = 'running' | 'paused' | 'completed' | 'cancelled';
 
+/** Tarea de una sesión de foco, tal como la devuelve el backend (sin depender de localStorage). */
+export interface FocusTask {
+    id: number;
+    title: string;
+    status: TaskStatus;
+    blocked: boolean;
+    org_id: number;
+    group_id: number;
+    project_id: number;
+}
+
+/** Pomodoro en curso (running/paused) que trae la sesión para restaurar el timer al recargar. */
+export interface CurrentPomodoro {
+    id: number;
+    task_id: number;
+    status: PomodoroStatus;
+    duration_minutes: number;
+    started_at: string;
+    remaining_seconds: number;
+}
+
 export interface FocusSession {
     id: string;
     goal_text: string;
     status: FocusSessionStatus;
     task_ids: number[];
+    /** Tareas de la sesión, en el orden elegido (fuente de verdad para la lista). */
+    tasks: FocusTask[];
+    current_pomodoro: CurrentPomodoro | null;
     started_at: string;
     ended_at: string | null;
 }
@@ -178,6 +202,8 @@ export interface Pomodoro {
     duration_minutes: number;
     started_at: string;
     completed_at: string | null;
+    /** Segundos que faltan para completarlo; lo calcula el backend en cada acción. */
+    remaining_seconds?: number;
 }
 
 export interface FocusSessionSummary {
